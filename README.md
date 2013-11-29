@@ -3,4 +3,4 @@ deadcheck
 
 Deadlink Check Utility
 
-This is [an example](http://example.com/ "Title") inline link.
+[Bug Tracking] (https://www.assembla.com/spaces/deadcheck/tickets "Bugs") 
