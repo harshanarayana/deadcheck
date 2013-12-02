@@ -17,6 +17,7 @@ pLinkData = {}
 pLinkData['__link'] = None
 pLinkData['__title'] = None
 
+__extractedLinks = []
 ## Custom Class For Handling URL Link Information. 
 class URLLinks(object):
     
@@ -35,10 +36,10 @@ class URLLinks(object):
     def getChildInfo(self):
         return (self.childLink, self.childTitle, self.linkType)
     
-    def isBroken(self):
+    def getIsBroken(self):
         return self.isBroken
     
-    def isProcessed(self):
+    def getIsProcessed(self):
         return self.isProcessed
     
     def setBroken(self, value):
@@ -52,19 +53,45 @@ class URLLinks(object):
 
 ## Custom Class For Parsing and Extracting Info from the URL 
 class MyHTMLParser(HTMLParser):
-    def __init__(self):
-        pass
-    
+    __startTitle = False
+    __link = None
+    __title = None
+    __isLink = False
     def handle_starttag(self, tag, attrs):
-        HTMLParser.handle_starttag(self, tag, attrs)
-    
+        if ( tag.upper() == 'TITLE' and getParentData()[1] == None):
+            MyHTMLParser.__startTitle = True
+        if ( tag.upper() == 'A'):
+            for att in attrs:
+                if att[0].upper() == 'HREF':
+                    MyHTMLParser.__link = att[1]
+                    MyHTMLParser.__isLink = True
+                    
     def handle_data(self, data):
-        HTMLParser.handle_data(self, data)
+        if ( getParentData()[1] == None and MyHTMLParser.__startTitle ):
+            setParentTitle(data)
+        if ( MyHTMLParser.__isLink and MyHTMLParser.__link != None):
+            MyHTMLParser.__title = data
         
     def handle_endtag(self, tag):
-        HTMLParser.handle_endtag(self, tag)
+        if ( getParentData()[1] != None and MyHTMLParser.__startTitle):
+            MyHTMLParser.__startTitle = False
+        if ( MyHTMLParser.__link != None and MyHTMLParser.__title != None and MyHTMLParser.__isLink):
+            MyHTMLParser.__isLink = False
+            createParsedLinkObject(MyHTMLParser.__link, MyHTMLParser.__title)
 
-   
+def createParsedLinkObject(cLink, cTitle):
+    (pLink, pTitle) = getParentData()
+    cLink.lstrip().rstrip()
+    cTitle.lstrip().rstrip()
+    if ( cTitle == None):
+        cTitle = '<Unknown>'
+    if ( cLink.startswith('/#') or cLink.startswith('#') or cLink.startswith('./') or cLink.startswith('../')):
+        import urlparse
+        cLink = urlparse.urljoin(pLink, cLink)
+        
+    urlObject = URLLinks(pLink, pTitle, cLink, cTitle)
+    __extractedLinks.append(urlObject)
+     
 # Function To handle the Arguments. Will work both for Direct Import method / run from another script. 
 def Deadcheck(argList):
     if argList.has_key('-cli'):
@@ -100,6 +127,19 @@ def Deadcheck(argList):
     
 def checkKey(keyName):
     return args.has_key(keyName)
+
+def setParentLink(url):
+    url = url.lstrip().rstrip()
+    pLinkData['__link'] = url
+    
+def setParentTitle(title):
+    title = title.lstrip().rstrip()
+    if ( title == None):
+        title = '<Unknown>'
+    pLinkData['__title'] = title
+    
+def getParentData():
+    return(pLinkData['__link'], pLinkData['__title'])
 
 def verifyAndValidateArgs():
     if ( not checkKey('__url')):
@@ -154,8 +194,70 @@ def checkAndSetUrlLib():
     if ( opener != None):
         urllib2.install_opener(opener)
 
+def getData(url, level=1):
+    try:
+        data = urllib2.urlopen(url)
+        return data.read()
+    except urllib2.HTTPError, e:
+        if ( level == 0 ):
+            error('HTTPError = ' + str(e.code))
+            exit(-1)
+        else:
+            return None
+    except urllib2.URLError, e:
+        if ( level == 0 ):
+            error('URLError = ' + str(e.reason))
+            exit(-1)
+        else:
+            return None
+    except Exception:
+        if ( level == 0 ):
+            import traceback
+            error('generic exception: ' + traceback.format_exc())
+            exit(-1)
+        else:
+            return None
+    
 def process(urlToProcess = None):
-    pass
+    parser = MyHTMLParser()
+    if ( urlToProcess == None):
+        setParentLink(args['__url'])
+        data = getData(args['__url'],0)
+        parser.feed(data)
+        return __extractedLinks
+    else:
+        setParentLink(urlToProcess)
+        data = getData(urlToProcess)
+        parser.feed(data)
+        return __extractedLinks
+
+def getLinks():
+    return __extractedLinks
+
+def analyze(url = None):
+    if ( url == None):
+        for link in __extractedLinks:
+            l = link.getIsProcessed()
+            if ( not l):
+                data = None
+                childLink = link.getChildInfo()[0]
+                if ( 'javascript' not in childLink.lower()):
+                    data = getData(childLink)
+                else:
+                    warning('Links within Javascript Callback are not yet handled.')    
+                if ( data != None ):
+                    link.setProcessed(True)
+                    link.setBroken(False)
+                else:
+                    link.setBroken(True)
+        return __extractedLinks
+    else:
+        data = None
+        data = getData(url)
+        if ( data != None ):
+            return False
+        else:
+            return True
         
 # Message Display Functions using Logging.
 def warning(message):
