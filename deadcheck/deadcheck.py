@@ -21,7 +21,7 @@ __extractedLinks = []
 ## Custom Class For Handling URL Link Information. 
 class URLLinks(object):
     
-    def __init__(self, parentLink, parentTitle, childLink, childTitle, isProcessed = False, isBroken = False, linkType = None):
+    def __init__(self, parentLink, parentTitle, childLink, childTitle, isProcessed = False, isBroken = False, linkType = None, info = None):
         self.parentLink = parentLink
         self.parentTitle = parentTitle
         self.childLink = childLink
@@ -29,6 +29,7 @@ class URLLinks(object):
         self.isProcessed = isProcessed
         self.isBroken = isBroken
         self.linkType = linkType
+        self.info = info
         
     def getParentInfo(self):
         return (self.parentLink, self.parentTitle)
@@ -54,6 +55,12 @@ class URLLinks(object):
     def get(self):
         return self.__dict__
     
+    def getInfo(self):
+        return self.info
+    
+    def setInfo(self, info):
+        self.info = info
+        
 ## Custom Class For Parsing and Extracting Info from the URL 
 class MyHTMLParser(HTMLParser):
     __startTitle = False
@@ -248,6 +255,7 @@ def analyze(url = None):
                 if ( 'javascript' not in childLink.lower()):
                     data = getData(childLink)
                 else:
+                    link.setInfo('Links within Javascript Callback are not yet handled.')
                     warning('Links within Javascript Callback are not yet handled.')    
                 if ( data != None ):
                     link.setProcessed(True)

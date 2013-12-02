@@ -38,7 +38,6 @@ argParse.add_argument('-cli', action='store', type=bool, dest='-cli',
                       default=True, metavar='TRUE|FALSE', help='True | False based on the CLI input. Defaults to True when run from CLI. Can be set to FALSE. This will disable message dispaly.')
 
 args = argParse.parse_args()
-print args.__dict__
 deadcheck.init(args.__dict__)
 deadcheck.process()
-p = deadcheck.analyze()
+links = deadcheck.analyze()
