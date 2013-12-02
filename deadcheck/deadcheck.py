@@ -50,7 +50,10 @@ class URLLinks(object):
     
     def setLinkType(self, value):
         self.linkType = value
-
+    
+    def get(self):
+        return self.__dict__
+    
 ## Custom Class For Parsing and Extracting Info from the URL 
 class MyHTMLParser(HTMLParser):
     __startTitle = False
@@ -93,7 +96,8 @@ def createParsedLinkObject(cLink, cTitle):
     __extractedLinks.append(urlObject)
      
 # Function To handle the Arguments. Will work both for Direct Import method / run from another script. 
-def Deadcheck(argList):
+def init(argList):
+    
     if argList.has_key('-cli'):
         args['__cli'] = argList['-cli']
     else:
@@ -110,8 +114,8 @@ def Deadcheck(argList):
             args['__auth_base'] = argList['-baseurl']
         elif ( key == '-url'):
             args['__url'] = argList['-url']
-        elif ( key == '-o'):
-            args['__output'] = argList['-o']
+        elif ( key == '-out'):
+            args['__output'] = argList['-out']
         elif ( key == '-exempt'):
             args['__exempt'] = argList['-exempt']
         elif ( key == '-log'):
@@ -126,7 +130,7 @@ def Deadcheck(argList):
     checkAndSetUrlLib()    
     
 def checkKey(keyName):
-    return args.has_key(keyName)
+    return args.has_key(keyName) and args[keyName] != None
 
 def setParentLink(url):
     url = url.lstrip().rstrip()
@@ -182,9 +186,9 @@ def checkAndSetUrlLib():
         proxy = urllib2.ProxyHandler({'http':args['__proxy'], 'https' : args['__proxy']})
         opener = urllib2.build_opener(proxy)
     
-    if ( checkKey('__username') and checkKey('__password')):
+    if ( checkKey('__username') and checkKey('__password') and args['__username'] != None and args['__password'] != None):
         passManager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        if ( checkKey('__auth_base')):
+        if ( checkKey('__auth_base') and args['__auth_base'] != None):
             passManager.add_password(None, args['__auth_base'], args['__username'], args['__password'])
         else:
             passManager.add_password(None, args['__url'], args['__username'], args['__password'])
@@ -249,6 +253,7 @@ def analyze(url = None):
                     link.setProcessed(True)
                     link.setBroken(False)
                 else:
+                    link.setProcessed(True)
                     link.setBroken(True)
         return __extractedLinks
     else:
