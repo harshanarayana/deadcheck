@@ -1,12 +1,15 @@
 '''
 Created on Nov 29, 2013
 
-@author: harsnara
+@author: harshanarayana
 '''
 ## Imports Necessary for Processing. 
 import logging
 import urllib2
 from HTMLParser import HTMLParser
+
+## File information. 
+__verison__ = "0.0.1"
 
 ## Global Variables
     # Variables Used for Storing Arguments. 
@@ -95,7 +98,7 @@ def createParsedLinkObject(cLink, cTitle):
     cTitle.lstrip().rstrip()
     if ( cTitle == None):
         cTitle = '<Unknown>'
-    if ( cLink.startswith('/#') or cLink.startswith('#') or cLink.startswith('./') or cLink.startswith('../')):
+    if ( cLink.startswith('/#') or cLink.startswith('#') or cLink.startswith('./') or cLink.startswith('../') or cLink.startswith('/') or pLink not in cLink):
         import urlparse
         cLink = urlparse.urljoin(pLink, cLink)
         
@@ -208,38 +211,38 @@ def checkAndSetUrlLib():
 def getData(url, level=1):
     try:
         data = urllib2.urlopen(url)
-        return data.read()
+        return (data.read(),None)
     except urllib2.HTTPError, e:
         if ( level == 0 ):
             error('HTTPError = ' + str(e.code))
             exit(-1)
         else:
-            return None
+            return (None, str(e.code))
     except urllib2.URLError, e:
         if ( level == 0 ):
             error('URLError = ' + str(e.reason))
             exit(-1)
         else:
-            return None
+            return (None, str(e.reason))
     except Exception:
+        import traceback
         if ( level == 0 ):
-            import traceback
             error('generic exception: ' + traceback.format_exc())
             exit(-1)
         else:
-            return None
+            return (None, traceback.format_exc())
     
 def process(urlToProcess = None):
     parser = MyHTMLParser()
     if ( urlToProcess == None):
         setParentLink(args['__url'])
         data = getData(args['__url'],0)
-        parser.feed(data)
+        parser.feed(data[0])
         return __extractedLinks
     else:
         setParentLink(urlToProcess)
         data = getData(urlToProcess)
-        parser.feed(data)
+        parser.feed(data[0])
         return __extractedLinks
 
 def getLinks():
@@ -250,19 +253,21 @@ def analyze(url = None):
         for link in __extractedLinks:
             l = link.getIsProcessed()
             if ( not l):
-                data = None
+                data = ()
                 childLink = link.getChildInfo()[0]
                 if ( 'javascript' not in childLink.lower()):
                     data = getData(childLink)
                 else:
-                    link.setInfo('Links within Javascript Callback are not yet handled.')
+                    data = ('None','Links within Javascript Callback are not yet handled.')
+                    #link.setInfo('Links within Javascript Callback are not yet handled.')
                     warning('Links within Javascript Callback are not yet handled.')    
-                if ( data != None ):
+                if ( data[0] != None ):
                     link.setProcessed(True)
                     link.setBroken(False)
                 else:
                     link.setProcessed(True)
                     link.setBroken(True)
+                    link.setInfo(data[1])
         return __extractedLinks
     else:
         data = None
@@ -284,4 +289,3 @@ def error(message):
 def message(message):
     if args['__cli'] :
         logging.info(message)
-
