@@ -3,289 +3,335 @@ Created on Nov 29, 2013
 
 @author: harshanarayana
 '''
-## Imports Necessary for Processing. 
+
+__version__ = "0.0.1"
+
+from ErrorHandler import ArgumentMissingError
+from ErrorCodes import ErrorCodes
 import logging
 import urllib2
-from HTMLParser import HTMLParser
+from lxml import etree
+from URLLinks import URLLinks
+import time
+import urlparse
+import httplib
 
-## File information. 
-__verison__ = "0.0.1"
-
-## Global Variables
-    # Variables Used for Storing Arguments. 
-args = {}
-
-    # Variable Used for storing Parent Link Info. 
-pLinkData = {}
-pLinkData['__link'] = None
-pLinkData['__title'] = None
-
-__extractedLinks = []
-## Custom Class For Handling URL Link Information. 
-class URLLinks(object):
+class Deadcheck(object):
     
-    def __init__(self, parentLink, parentTitle, childLink, childTitle, isProcessed = False, isBroken = False, linkType = None, info = None):
-        self.parentLink = parentLink
-        self.parentTitle = parentTitle
-        self.childLink = childLink
-        self.childTitle = childTitle
-        self.isProcessed = isProcessed
-        self.isBroken = isBroken
-        self.linkType = linkType
-        self.info = info
+    __levelBasedLinks = {}
+    
+    def __init__(self, url, proxy=None, username=None, password=None, auth_base=None, verbose=True, log=None, exempt=None, depth=1):
+        self._url = url
+        self._proxy = proxy
+        self._username = username
+        self._password = password
+        self._auth_base = auth_base
+        self._verbose = verbose
+        self._log = log
+        self._exempt = exempt
+        self._depth = depth
+        self.__verifyAndValidate()
+        self.__checkAndSetUrlLib()
+        self.__processBaseURL()
+    
+    def getAll(self):
+        return Deadcheck.__levelBasedLinks
+    
+    def get_depth(self):
+        return self._depth
+    
+    def set_depth(self,value):
+        self._depth = value
         
-    def getParentInfo(self):
-        return (self.parentLink, self.parentTitle)
-    
-    def getChildInfo(self):
-        return (self.childLink, self.childTitle, self.linkType)
-    
-    def getIsBroken(self):
-        return self.isBroken
-    
-    def getIsProcessed(self):
-        return self.isProcessed
-    
-    def setBroken(self, value):
-        self.isBroken = value
-    
-    def setProcessed(self, value):
-        self.isProcessed = value
-    
-    def setLinkType(self, value):
-        self.linkType = value
-    
-    def get(self):
+    def del_depth(self):
+        del self._depth
+        
+    def get_dict(self):
         return self.__dict__
-    
-    def getInfo(self):
-        return self.info
-    
-    def setInfo(self, info):
-        self.info = info
-        
-## Custom Class For Parsing and Extracting Info from the URL 
-class MyHTMLParser(HTMLParser):
-    __startTitle = False
-    __link = None
-    __title = None
-    __isLink = False
-    def handle_starttag(self, tag, attrs):
-        if ( tag.upper() == 'TITLE' and getParentData()[1] == None):
-            MyHTMLParser.__startTitle = True
-        if ( tag.upper() == 'A'):
-            for att in attrs:
-                if att[0].upper() == 'HREF':
-                    MyHTMLParser.__link = att[1]
-                    MyHTMLParser.__isLink = True
-                    
-    def handle_data(self, data):
-        if ( getParentData()[1] == None and MyHTMLParser.__startTitle ):
-            setParentTitle(data)
-        if ( MyHTMLParser.__isLink and MyHTMLParser.__link != None):
-            MyHTMLParser.__title = data
-        
-    def handle_endtag(self, tag):
-        if ( getParentData()[1] != None and MyHTMLParser.__startTitle):
-            MyHTMLParser.__startTitle = False
-        if ( MyHTMLParser.__link != None and MyHTMLParser.__title != None and MyHTMLParser.__isLink):
-            MyHTMLParser.__isLink = False
-            createParsedLinkObject(MyHTMLParser.__link, MyHTMLParser.__title)
 
-def createParsedLinkObject(cLink, cTitle):
-    (pLink, pTitle) = getParentData()
-    cLink.lstrip().rstrip()
-    cTitle.lstrip().rstrip()
-    if ( cTitle == None):
-        cTitle = '<Unknown>'
-    if ( cLink.startswith('/#') or cLink.startswith('#') or cLink.startswith('./') or cLink.startswith('../') or cLink.startswith('/') or pLink not in cLink):
-        import urlparse
-        cLink = urlparse.urljoin(pLink, cLink)
+
+    def get_url(self):
+        return self.__url
+
+
+    def get_proxy(self):
+        return self.__proxy
+
+
+    def get_verbose(self):
+        return self.__verbose
+
+
+    def get_log(self):
+        return self.__log
+
+
+    def get_exempt(self):
+        return self.__exempt
+
+
+    def __set_url(self, value):
+        self.__url = value
+
+
+    def __set_proxy(self, value):
+        self.__proxy = value
+
+
+    def __set_username(self, value):
+        self.__username = value
+
+
+    def __set_password(self, value):
+        self.__password = value
+
+
+    def __set_auth_base(self, value):
+        self.__auth_base = value
+
+
+    def set_verbose(self, value):
+        self.__verbose = value
+
+
+    def set_log(self, value):
+        self.__log = value
+
+
+    def set_exempt(self, value):
+        self.__exempt = value
+
         
-    urlObject = URLLinks(pLink, pTitle, cLink, cTitle)
-    __extractedLinks.append(urlObject)
-     
-# Function To handle the Arguments. Will work both for Direct Import method / run from another script. 
-def init(argList):
-    
-    if argList.has_key('-cli'):
-        args['__cli'] = argList['-cli']
-    else:
-        args['__cli'] = False
+    def __verifyAndValidate(self):
+        self.checkAndSetLog()    
+        if ( not self.__checkKey('_url')):
+            raise ArgumentMissingError('Paramenter for argument \'-url\' is missing.','-url')
         
-    for key in argList.keys():
-        if ( key == '-proxy'):
-            args['__proxy'] = argList['-proxy']
-        elif ( key == '-username'):
-            args['__username'] = argList['-username']
-        elif ( key == '-password'):
-            args['__password'] = argList['-password']
-        elif ( key == '-baseurl'):
-            args['__auth_base'] = argList['-baseurl']
-        elif ( key == '-url'):
-            args['__url'] = argList['-url']
-        elif ( key == '-out'):
-            args['__output'] = argList['-out']
-        elif ( key == '-exempt'):
-            args['__exempt'] = argList['-exempt']
-        elif ( key == '-log'):
-            args['__log'] = argList['-log']
-        elif ( key == '-cli'):
-            args['__cli'] = argList['-cli']
+        if ( not self.__checkKey('_proxy')):
+            self.__printWarning('No Proxy Information provided. If you are running the tool on a machine that accesses internet through Proxy, the check will fail.')
+        
+        if (self.__checkKey('_username') and self.__checkKey('_password')):
+            if ( not self.__checkKey('_auth_base')):
+                self.__printWarning('No super URL provided for Authenticating password Protected pages. Base URL will be used instead.')
         else:
-            warning('Invalid argument %s . Skipping...' %(key))
-                    
-    checkAndSetLog()
-    verifyAndValidateArgs()
-    checkAndSetUrlLib()    
-    
-def checkKey(keyName):
-    return args.has_key(keyName) and args[keyName] != None
-
-def setParentLink(url):
-    url = url.lstrip().rstrip()
-    pLinkData['__link'] = url
-    
-def setParentTitle(title):
-    title = title.lstrip().rstrip()
-    if ( title == None):
-        title = '<Unknown>'
-    pLinkData['__title'] = title
-    
-def getParentData():
-    return(pLinkData['__link'], pLinkData['__title'])
-
-def verifyAndValidateArgs():
-    if ( not checkKey('__url')):
-        error('Please make sure input contains a key named \'-url\' and a value corresponding to it. This is used as the Base URL for Analysis.')
-        exit(-1)
-    
-    if ( not checkKey('__proxy')):
-        warning('No proxy information provided. If you are running this module on a machine that access internet through a Proxy, this test might fail.')
-
-    if ( checkKey('__username') and checkKey('__password')):
-        if ( not checkKey('__auth_base')):
-            message('No base URL provided for Authentication purpose. Link being analyzed itself is set as base URL for Authentication purpose.')
-    else:
-        warning('Insufficient Login information provided for Authentication. All protected Links will be excluded from analysis.')
+            self.__printWarning('No password protected pages will be processed.')
+        
+        if ( not self.__checkKey('_exempt')):
+            self.__printMessage('No exemptions file provided. All the links will be considered valid.')
             
-    if ( not checkKey('__log')):
-        warning('No Logfile information provided. No log information will be generated.')
     
-    if ( not checkKey('__output')):
-        warning('No Outputfile information Provided, hence no report file will be generated.')
+    def __checkAndSetUrlLib(self):
+        __proxy = None
+        __auth = None
+        __opener = None
         
-    if ( not checkKey('__exempt')):
-        warning('No file containing list of Exempted links is provided. All the links are considered valid for analysis.')
-    
-    if ( not checkKey('__cli')):
-        args['__cli'] = False
-        
-def checkAndSetLog():
-    if ( checkKey('__log')):
-        logging.basicConfig(filename=args['__log'], level=logging.DEBUG, format='%(name)s : %(levelname)s : %(message)s')
-    else:
-        logging.basicConfig(level=logging.DEBUG, format='%(name)s : %(levelname)s : %(message)s')
- 
-def checkAndSetUrlLib():
-    proxy = None
-    auth = None
-    opener = None
-    
-    if ( checkKey('__proxy')):
-        proxy = urllib2.ProxyHandler({'http':args['__proxy'], 'https' : args['__proxy']})
-        opener = urllib2.build_opener(proxy)
-    
-    if ( checkKey('__username') and checkKey('__password') and args['__username'] != None and args['__password'] != None):
-        passManager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-        if ( checkKey('__auth_base') and args['__auth_base'] != None):
-            passManager.add_password(None, args['__auth_base'], args['__username'], args['__password'])
+        if ( self.__checkKey('_proxy')):
+            __proxy = urllib2.ProxyHandler({'http':self.__dict__['_proxy'], 'https':self.__dict__['_proxy']})
+            __opener = urllib2.build_opener(__proxy)
+            
+        if ( self.__checkKey('_username') and self.__checkKey('_password')):
+            passManager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            if ( self.__checkKey('_auth_base')):
+                passManager.add_password(None, self.__dict__['_auth_base'], self.__dict__['_username'], self.__dict__['_password'])
+            else:
+                passManager.add_password(None, self.__dict__['_url'], self.__dict__['_username'], self.__dict__['_password'])
+            
+            __auth = urllib2.HTTPBasicAuthHandler(passManager)
+            __opener = urllib2.build_opener(__auth)
+            
+        if ( __opener != None ):
+            urllib2.install_opener(__opener)
+            
+    def checkAndSetLog(self):
+        if ( self.__checkKey('_verbose')):
+            if ( self.__checkKey('_log')):
+                logging.basicConfig(level=logging.DEBUG, filename=self.__dict__['_log'], format='%(name)s : %(levelname)s : %(message)s')
+            else:
+                logging.basicConfig(level=logging.DEBUG, format='%(name)s : %(levelname)s : %(message)s')
         else:
-            passManager.add_password(None, args['__url'], args['__username'], args['__password'])
-        auth = urllib2.HTTPBasicAuthHandler(passManager)
-        opener = urllib2.build_opener(auth)
+            logging.basicConfig(level=logging.ERROR)
     
-    if ( opener != None):
-        urllib2.install_opener(opener)
-
-def getData(url, level=1):
-    try:
-        data = urllib2.urlopen(url)
-        return (data.read(),None)
-    except urllib2.HTTPError, e:
-        if ( level == 0 ):
-            error('HTTPError = ' + str(e.code))
-            exit(-1)
-        else:
-            return (None, str(e.code))
-    except urllib2.URLError, e:
-        if ( level == 0 ):
-            error('URLError = ' + str(e.reason))
-            exit(-1)
-        else:
-            return (None, str(e.reason))
-    except Exception:
-        import traceback
-        if ( level == 0 ):
-            error('generic exception: ' + traceback.format_exc())
-            exit(-1)
-        else:
-            return (None, traceback.format_exc())
-    
-def process(urlToProcess = None):
-    parser = MyHTMLParser()
-    if ( urlToProcess == None):
-        setParentLink(args['__url'])
-        data = getData(args['__url'],0)
-        parser.feed(data[0])
-        return __extractedLinks
-    else:
-        setParentLink(urlToProcess)
-        data = getData(urlToProcess)
-        parser.feed(data[0])
-        return __extractedLinks
-
-def getLinks():
-    return __extractedLinks
-
-def analyze(url = None):
-    if ( url == None):
-        for link in __extractedLinks:
-            l = link.getIsProcessed()
-            if ( not l):
-                data = ()
-                childLink = link.getChildInfo()[0]
-                if ( 'javascript' not in childLink.lower()):
-                    data = getData(childLink)
-                else:
-                    data = ('None','Links within Javascript Callback are not yet handled.')
-                    #link.setInfo('Links within Javascript Callback are not yet handled.')
-                    warning('Links within Javascript Callback are not yet handled.')    
-                if ( data[0] != None ):
-                    link.setProcessed(True)
-                    link.setBroken(False)
-                else:
-                    link.setProcessed(True)
-                    link.setBroken(True)
-                    link.setInfo(data[1])
-        return __extractedLinks
-    else:
-        data = None
-        data = getData(url)
-        if ( data != None ):
-            return False
-        else:
+    def __size(self, size):
+        for x in ['bytes','KB','MB','GB']:
+            if size < 1024.0 and size > -1024.0:
+                return "%3.1f%s" % (size, x)
+            size /= 1024.0
+        return "%3.1f%s" % (size, 'TB')
+     
+    def __checkIfError(self, value):
+        if ( 'HTTPError' in value or 'URLError' in value or 'HTTPException' in value or 'Generic Exception' in value):
             return True
+        else:
+            return False
+    def __raiseError(self, value, *url):
+        if ( value[0] == 'HTTPError'):
+            eCode = ErrorCodes(int(value[1]))
+            raise urllib2.HTTPError(url[0], int(value[1]), eCode.getError(), None, None)
+        elif ( value[0] == 'URLError'):
+            raise urllib2.URLError(value[1])
+        elif ( value[0] == 'HTTPException'):
+            raise httplib.HTTPException(value[1])
+        elif ( value[0] == 'Generic Exception'):
+            raise Exception(value[0] + ' : ' + value[1])
         
-# Message Display Functions using Logging.
-def warning(message):
-    if args['__cli'] :
-        logging.warning(message)
-
-def error(message):
-#    if args['__cli'] :
-    logging.error(message)
-
-def message(message):
-    if args['__cli'] :
+    def __processBaseURL(self):
+        ts = time.time()
+        handle = self.__getDataFromURL(self.__dict__['_url'])
+        ted = time.time()
+        dlTime = ted - ts
+        if ( self.__checkIfError(handle)):
+            if ( handle[0] == 'HTTPError'):
+                eCode = ErrorCodes(handle[1])
+                einfo = eCode.getError()[1]
+            else:
+                einfo = handle[1]
+            urlObject = URLLinks(self.__dict__['_url'], None, self.__dict__['_url'], None, isProcessed=True, isBroken=True, 
+                                 size='<Unknown>', dlTime=dlTime, checkTime=dlTime, lastModified='<Unknwon>', info=einfo,status=handle[0] + ' : ' + handle[1], lType='<Unknwon>')
+            self.__printError(handle[0] + ' : ' + handle[1] + ' : ' + einfo)
+            self.__raiseError(handle, self.__dict__['_url'])
+        else:
+            ts = time.time()
+            htmlData = urllib2.urlopen(self.__dict__['_url'])
+            ted = time.time()
+            data = etree.HTML(htmlData.read())
+            dlTime  =   ted - ts
+            title = self.__getURLTitle(data)
+            links = self.__links(data)
+            (lTtype, lastChagned, size) = self.__getURLInfo(handle)
+            status = 'OK'
+            urlObj = URLLinks(self.__dict__['_url'], title, self.__dict__['_url'], title, isProcessed=True, isBroken=False, size=size, dlTime=dlTime, 
+                              lastModified=lastChagned, info='Successfully Processed', status=status, lType=lTtype)
+            
+            for link in links:
+                cLink = str(link.attrib['href']).lstrip().rstrip()
+                if ( cLink.startswith('#') or cLink.startswith('.') or cLink.startswith('..') or self.__dict__['_url'] not in cLink):
+                    cLink = urlparse.urljoin(self.__dict__['_url'], cLink)
+                
+                if ( self.__dict__['_url'] in cLink):
+                    cTitle = link.text
+                    temp = URLLinks(self.__dict__['_url'], title, cLink, cTitle)
+                    urlObj.addChild(temp)
+            te = time.time()
+            cTime = te - ts
+            urlObj.setCheckTime(cTime)
+            Deadcheck.__levelBasedLinks[0] = []
+            Deadcheck.__levelBasedLinks[0].append(urlObj)
+            
+    def process(self):
+        if ( self.get_depth() == 0 ):
+            self.__analyze() 
+        else:
+            for level in range(self.get_depth()):
+                Deadcheck.__levelBasedLinks[level+1] = []
+                for vobj in self.getAll()[level]:
+                    for obj in vobj.getChildren():
+                        (url, title) = obj.get()
+                        print obj.get()
+                        ts = time.time()
+                        handle = self.__getDataFromURL(url)
+                        ted = time.time()
+                        if ( self.__checkIfError(handle)):
+                            if ( handle[0] == 'HTTPError'):
+                                eCode = ErrorCodes(handle[1])
+                                einfo = eCode.getError()[1]
+                            else:
+                                einfo = handle[1]
+                            obj.setInfo(einfo)
+                            obj.setProcessed(True)
+                            obj.setBroken(True)
+                            obj.setStatus(handle[0] + ' : ' + str(handle[1]))
+                            obj.setDLTime(ted-ts)
+                            obj.setSize('<Unknown>')
+                            obj.setLastModified('<Unknown>')
+                            obj.setType('<Unknown>')
+                            obj.setCheckTime(ted-ts)
+                            
+                            print 'Broken ' + str(obj.get()) 
+                        else:
+                            ts = time.time()
+                            htmlData = urllib2.urlopen(url)
+                            ted = time.time()
+                            data = etree.HTML(htmlData.read())
+                            dlTime = ted - ts
+                            title = self.__getURLTitle(data)
+                            links = self.__links(data)
+                            (lTtype, lastChagned, size) = self.__getURLInfo(htmlData)
+                            status = 'OK'
+                            urlObj = URLLinks(url, title, url, title, isProcessed=True, isBroken=False, size=size, dlTime=dlTime, lastModified=lastChagned, 
+                                              info='Successfully Processed', status=status, lType=lTtype)
+                            
+                            for link in links:
+                                cLink = str(link.attrib['href']).lstrip().rstrip()
+                                if ( cLink.startswith('#') or cLink.startswith('.') or cLink.startswith('..') or url not in cLink):
+                                    cLink = urlparse.urljoin(url, cLink)
+                                
+                                if ( self.__dict__['_url'] in cLink):
+                                    cTitle = link.text
+                                    temp = URLLinks(url, title, cLink, cTitle)
+                                    urlObj.addChild(temp)
+                            te = time.time()
+                            cTime = te - ts
+                            urlObj.setCheckTime(cTime)
+                            Deadcheck.__levelBasedLinks[level+1].append(urlObj)
+                        
+    def __analyze(self):
+        pass        
+    def __getURLTitle(self, handle):
+        if handle == None:
+            title = '<Unknown>'
+        tData = handle.find('.//title')
+        if tData == None:
+            title = '<Unknown>'
+        else:
+            title = tData.text
+        
+        return title
+    
+    def __getURLInfo(self, handle):
+        if ( handle.info().dict.has_key('last-modified')):
+            lastModified = handle.info()['last-modified']
+        else:
+            lastModified = '<Unknown>'
+        
+        if ( handle.info().dict.has_key('content-length')):
+            size = self.__size(int(handle.info()['content-length']))
+        else:
+            size = '<Unknown>'
+        
+        linkType = handle.info().gettype()
+        
+        return (linkType, lastModified, size)
+    
+    def __links(self, handle):
+        if handle == None:
+            return []
+        return handle.findall('.//*[@href]')
+            
+    def __getDataFromURL(self, urlLink):
+        try:
+            htmlData = urllib2.urlopen(urlLink, timeout=10)
+            return (htmlData)
+        except urllib2.HTTPError, e:
+            error = ('HTTPError', str(e.getcode()))
+            return error
+        except urllib2.URLError, e:
+            error = ('URLError', str(e.reason))
+            return error
+        except httplib.HTTPException, e:
+            error = ('HTTPException', str(e.message))
+            return error
+        except Exception, e:
+            error = ('Generic Exception', e.message)
+            return error
+            
+    def __printMessage(self, message):
         logging.info(message)
+        
+    def __printWarning(self, message):
+        logging.warning(message)
+        
+    def __printError(self, message):
+        logging.error(message)
+                    
+    def __checkKey(self,key):
+        return self.__dict__.has_key(key) and self.__dict__[key] != None        
