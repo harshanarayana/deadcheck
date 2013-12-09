@@ -11,7 +11,6 @@ __version__ = "0.0.2"
 __author__ ="Harsha Narayana"
 __date__ = "03 Dec 2013"
 
-
 from distutils.core import setup
 
 setup(name = 'deadcheck',
