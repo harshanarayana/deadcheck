@@ -1,10 +1,16 @@
 '''
 Created on Dec 3, 2013
 
-@author: harsnara
+@author: harshanarayana
+
+@change:     2013-12-03    Initial Draft. A custom URLLinks class to Store and access information pertaining to a Single URL in Question
+
 '''
 
 __version__ = "0.0.1"
+__date__ = "06th December 2013"
+__author__ = "Harsha Narayana"
+
 
 class URLLinks(object):
     '''
@@ -34,9 +40,18 @@ class URLLinks(object):
         self.__childURLs = []
     
     def addChild(self, value):
+        '''
+        Method created for adding a new Object of the type URLLinks into self.__childURLs
+        Each element added is a URL extracted from the current page being processed. Valid / Invalid both will be 
+        present. Status of Validity is changed later on based on the code. 
+        '''
         self.__childURLs.append(value)
                     
     def getChildren(self):
+        '''
+        Method used for returning all child URL object. 
+        Return type is a list of URLLinks object. 
+        '''
         return self.__childURLs
     
     def getParentLink(self):
@@ -205,3 +220,21 @@ class URLLinks(object):
     def set(self, childLink, childTitle):
         self.__childLink = childLink
         self.__childTitle = childTitle
+        
+    def info(self):
+        infoString = ''
+        infoString += '\nCurrent URL           : ' + str(self.getChildLink())
+        infoString += '\nCurrent URL Title     : ' + str(self.getChildTitle()) 
+        infoString += '\nParent URL            : ' + str(self.getParentLink())
+        infoString += '\nParent Title          : ' + str(self.getParentTitle())
+        infoString += '\nStatus                : ' + str(self.getStatus())
+        infoString += '\nIs Broken             : ' + str(self.isBroken())
+        infoString += '\nIs Processed          : ' + str(self.isProcessed())
+        infoString += '\nFile Size             : ' + str(self.getSize())
+        infoString += '\nLink Type             : ' + str(self.getType())
+        infoString += '\nDownload Time         : ' + str(self.getDLTime())
+        infoString += '\nProcessing Time       : ' + str(self.getCheckTime())
+        infoString += '\nLast Modified         : ' + str(self.getLastModified())
+        infoString += '\nInfo                  : ' + str(self.getInfo())
+        return infoString
+    

@@ -2,12 +2,20 @@
 Created on Dec 3, 2013
 
 @author: harsnara
+
+@change:     2013-12-03    :    Initial Draft
+             2013-12-09    :    Changes Made for release 0.0.2
 '''
+
+__version__ = "0.0.2"
+__author__ ="Harsha Narayana"
+__date__ = "03 Dec 2013"
+
 
 from distutils.core import setup
 
 setup(name = 'deadcheck',
-      version = '0.0.1',
+      version = '0.0.2',
       description = 'Deadlink Check utility using Python.',
       author = 'Harsha Narayana',
       author_email = 'harsha2k4@gmail.com',
@@ -31,5 +39,5 @@ setup(name = 'deadcheck',
           'Topic :: Office/Business',
           'Topic :: Software Development :: Bug Tracking',
           ],
-      scripts=['run.py']
+      scripts=['deadcheck.py']
       )

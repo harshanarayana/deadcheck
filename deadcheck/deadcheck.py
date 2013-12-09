@@ -2,9 +2,16 @@
 Created on Nov 29, 2013
 
 @author: harshanarayana
+
+@change:    2013-11-29    Initial Draft
+            2013-12-06    Re-Structured the Code to support Data suitable for liche output format. 
+            
 '''
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
+__date__ = "06th December 2013"
+__author__ = "Harsha Narayana"
+
 
 from ErrorHandler import ArgumentMissingError
 from ErrorCodes import ErrorCodes
@@ -15,11 +22,14 @@ from URLLinks import URLLinks
 import time
 import urlparse
 import httplib
+import re
 
 class Deadcheck(object):
     
     __levelBasedLinks = {}
-    
+    __ProcessedLinks = {}
+    __exemptedItems = []
+        
     def __init__(self, url, proxy=None, username=None, password=None, auth_base=None, verbose=True, log=None, exempt=None, depth=1):
         self._url = url
         self._proxy = proxy
@@ -33,7 +43,7 @@ class Deadcheck(object):
         self.__verifyAndValidate()
         self.__checkAndSetUrlLib()
         self.__processBaseURL()
-    
+
     def getAll(self):
         return Deadcheck.__levelBasedLinks
     
@@ -103,7 +113,7 @@ class Deadcheck(object):
 
         
     def __verifyAndValidate(self):
-        self.checkAndSetLog()    
+        self.__checkAndSetLog()    
         if ( not self.__checkKey('_url')):
             raise ArgumentMissingError('Paramenter for argument \'-url\' is missing.','-url')
         
@@ -142,7 +152,7 @@ class Deadcheck(object):
         if ( __opener != None ):
             urllib2.install_opener(__opener)
             
-    def checkAndSetLog(self):
+    def __checkAndSetLog(self):
         if ( self.__checkKey('_verbose')):
             if ( self.__checkKey('_log')):
                 logging.basicConfig(level=logging.DEBUG, filename=self.__dict__['_log'], format='%(name)s : %(levelname)s : %(message)s')
@@ -189,6 +199,7 @@ class Deadcheck(object):
                                  size='<Unknown>', dlTime=dlTime, checkTime=dlTime, lastModified='<Unknwon>', info=einfo,status=handle[0] + ' : ' + handle[1], lType='<Unknwon>')
             self.__printError(handle[0] + ' : ' + handle[1] + ' : ' + einfo)
             self.__raiseError(handle, self.__dict__['_url'])
+            return urlObject
         else:
             ts = time.time()
             htmlData = urllib2.urlopen(self.__dict__['_url'])
@@ -216,69 +227,121 @@ class Deadcheck(object):
             urlObj.setCheckTime(cTime)
             Deadcheck.__levelBasedLinks[0] = []
             Deadcheck.__levelBasedLinks[0].append(urlObj)
-            
+    
+    def __loadExempt(self):
+        try:
+            with open(str(self.__dict__['_exempt'])) as eFile:
+                for line in eFile:
+                    Deadcheck.__exemptedItems.append(line.lstrip().rstrip())
+        except IOError:
+            self.__printWarning('Unable to get information from the exceptions file.')
+    
+    def __checkExempt(self, url):
+        exItem = Deadcheck.__exemptedItems
+        if ( len(exItem) > 0 ):
+            exItem = [ str(item) if not str(item).startswith('*') else '.'+str(item) for item in exItem]
+            exItem = '|'.join(exItem)
+            pattern = re.compile(exItem)
+            match = pattern.match(url, re.I)
+            if ( match != None):
+                return True
+            else:
+                return False
+        else:
+            return False
+        
     def process(self):
+        self.__loadExempt()
         if ( self.get_depth() == 0 ):
             self.__analyze() 
         else:
-            for level in range(self.get_depth()):
+            for level in range(self.get_depth()+1):
                 Deadcheck.__levelBasedLinks[level+1] = []
                 for vobj in self.getAll()[level]:
                     for obj in vobj.getChildren():
+                        t1 = time.time()
                         (url, title) = obj.get()
-                        print obj.get()
-                        ts = time.time()
-                        handle = self.__getDataFromURL(url)
-                        ted = time.time()
-                        if ( self.__checkIfError(handle)):
-                            if ( handle[0] == 'HTTPError'):
-                                eCode = ErrorCodes(handle[1])
-                                einfo = eCode.getError()[1]
-                            else:
-                                einfo = handle[1]
-                            obj.setInfo(einfo)
-                            obj.setProcessed(True)
-                            obj.setBroken(True)
-                            obj.setStatus(handle[0] + ' : ' + str(handle[1]))
-                            obj.setDLTime(ted-ts)
-                            obj.setSize('<Unknown>')
-                            obj.setLastModified('<Unknown>')
-                            obj.setType('<Unknown>')
-                            obj.setCheckTime(ted-ts)
-                            
-                            print 'Broken ' + str(obj.get()) 
-                        else:
+                        if ( not Deadcheck.__ProcessedLinks.has_key(url) and not self.__checkExempt(url) and 'javascript' not in url.lower()):
+                            Deadcheck.__ProcessedLinks[url] = 1
                             ts = time.time()
-                            htmlData = urllib2.urlopen(url)
+                            handle = self.__getDataFromURL(url)
                             ted = time.time()
-                            data = etree.HTML(htmlData.read())
-                            dlTime = ted - ts
-                            title = self.__getURLTitle(data)
-                            links = self.__links(data)
-                            (lTtype, lastChagned, size) = self.__getURLInfo(htmlData)
-                            status = 'OK'
-                            urlObj = URLLinks(url, title, url, title, isProcessed=True, isBroken=False, size=size, dlTime=dlTime, lastModified=lastChagned, 
-                                              info='Successfully Processed', status=status, lType=lTtype)
-                            
-                            for link in links:
-                                cLink = str(link.attrib['href']).lstrip().rstrip()
-                                if ( cLink.startswith('#') or cLink.startswith('.') or cLink.startswith('..') or url not in cLink):
-                                    cLink = urlparse.urljoin(url, cLink)
+                            if ( self.__checkIfError(handle)):
+                                if ( handle[0] == 'HTTPError'):
+                                    eCode = ErrorCodes(handle[1])
+                                    einfo = eCode.getError()[1]
+                                else:
+                                    einfo = handle[1]
+                                obj.setInfo(einfo)
+                                obj.setProcessed(True)
+                                obj.setBroken(True)
+                                obj.setStatus(handle[0] + ' : ' + str(handle[1]))
+                                obj.setDLTime(ted-ts)
+                                obj.setSize('<Unknown>')
+                                obj.setLastModified('<Unknown>')
+                                obj.setType('<Unknown>')
+                                obj.setCheckTime(ted-ts)
                                 
-                                if ( self.__dict__['_url'] in cLink):
-                                    cTitle = link.text
-                                    temp = URLLinks(url, title, cLink, cTitle)
-                                    urlObj.addChild(temp)
-                            te = time.time()
-                            cTime = te - ts
-                            urlObj.setCheckTime(cTime)
-                            Deadcheck.__levelBasedLinks[level+1].append(urlObj)
-                        
+                                print 'Broken ' + str(obj.get()) 
+                            else:
+                                ts = time.time()
+                                htmlData = urllib2.urlopen(url)
+                                ted = time.time()
+                                data = etree.HTML(htmlData.read())
+                                dlTime = ted - ts
+                                title = self.__getURLTitle(data)
+                                links = self.__links(data)
+                                (lTtype, lastChagned, size) = self.__getURLInfo(htmlData)
+                                status = 'OK'
+                                urlObj = URLLinks(url, title, url, title, isProcessed=True, isBroken=False, size=size, dlTime=dlTime, lastModified=lastChagned, 
+                                                  info='Successfully Processed', status=status, lType=lTtype)
+                                
+                                for link in links:
+                                    cLink = str(link.attrib['href']).lstrip().rstrip()
+                                    if ( cLink.startswith('#') or cLink.startswith('.') or cLink.startswith('..') or url not in cLink):
+                                        cLink = urlparse.urljoin(url, cLink)
+                                    
+                                    if ( self.__dict__['_url'] in cLink):
+                                        cTitle = link.text
+                                        temp = URLLinks(url, title, cLink, cTitle, status='UNPROCESSED')
+                                        urlObj.addChild(temp)
+                                te = time.time()
+                                cTime = te - ts
+                                urlObj.setCheckTime(cTime)
+                                Deadcheck.__levelBasedLinks[level+1].append(urlObj)
+                                t2 = time.time()
+                                obj.setInfo('Successfully Processed.')
+                                obj.setProcessed(True)
+                                obj.setBroken(False)
+                                obj.setStatus('OK')
+                                obj.setDLTime(dlTime)
+                                obj.setSize(size)
+                                obj.setLastModified(lastChagned)
+                                obj.setType(lTtype)
+                                obj.setCheckTime(t2-t1)
+                        else:
+                                if ( self.__checkExempt(url)):
+                                    obj.setInfo('Exempted based on the Input file : ' + self.__dict__['_exempt'])
+                                    obj.setStatus('EXEMPTED')
+                                elif ( 'javascript' in url ):
+                                    obj.setInfo('Javascript Links are not processed. Implementation underway.')
+                                    obj.setStatus('WARNING')
+                                else:
+                                    obj.setInfo('URL Already Processed. Will not be processed again.')
+                                    obj.setStatus('SKIPPED')    
+                                obj.setProcessed(True)
+                                obj.setBroken(False)
+                                obj.setDLTime(None)
+                                obj.setSize(None)
+                                obj.setLastModified(None)
+                                obj.setType(None)
+                                obj.setCheckTime(None)
     def __analyze(self):
         pass        
     def __getURLTitle(self, handle):
         if handle == None:
             title = '<Unknown>'
+            return title
         tData = handle.find('.//title')
         if tData == None:
             title = '<Unknown>'

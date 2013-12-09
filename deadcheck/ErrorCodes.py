@@ -1,14 +1,21 @@
 '''
 Created on Dec 4, 2013
 
-@author: harsnara
+@author: harshanarayana
+
+@change:     2013-12-04    Initial Draft. A custom Class contianing the list of Errors for HTTP. Will be used for Reporting. 
+
 '''
+__version__ = "0.0.1"
+__date__ = "06th December 2013"
+__author__ = "Harsha Narayana"
 
 class ErrorCodes(object):
     
     def __init__(self, errorCode):
         self.__errorCode = errorCode
-        self.__errMessage = { 100: ('Continue', 'Request received, please continue'),
+        self.__errMessage = { 
+    100: ('Continue', 'Request received, please continue'),
     101: ('Switching Protocols',
           'Switching to new protocol; obey Upgrade header'),
 

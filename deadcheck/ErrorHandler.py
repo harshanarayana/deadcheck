@@ -1,8 +1,15 @@
 '''
 Created on Dec 4, 2013
 
-@author: harsnara
+@author: harshanarayana
+
+@change:     2013-12-04    Initial Draft. A custom Class that can be used for Handling Custom Exceptions. Additional Info will be added 
+                           during the course of development. 
+                            
 '''
+__version__ = "0.0.1"
+__date__ = "06th December 2013"
+__author__ = "Harsha Narayana"
 
 class ArgumentMissingError(Exception):
     
