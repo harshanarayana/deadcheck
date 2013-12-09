@@ -39,5 +39,5 @@ setup(name = 'deadcheck',
           'Topic :: Office/Business',
           'Topic :: Software Development :: Bug Tracking',
           ],
-      scripts=['deadcheck.py']
+      scripts=['run.py']
       )
