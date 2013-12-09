@@ -222,6 +222,9 @@ class URLLinks(object):
         self.__childTitle = childTitle
         
     def info(self):
+        '''
+            Custom Function Writtten to extract Info from the Object that can be printed easily. 
+        '''
         infoString = ''
         infoString += '\nCurrent URL           : ' + str(self.getChildLink())
         infoString += '\nCurrent URL Title     : ' + str(self.getChildTitle()) 
