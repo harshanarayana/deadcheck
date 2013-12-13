@@ -14,15 +14,20 @@ Script that can be used for Running the Python Utility Deadcheck from the CLI
 @contact:   harsha2k4@gmail.com
 
 @change:    2013-12-09     : Initial Draft
+            2013-12-13     : Script Updated to Support the Usage of the Report generation module to 
+                             create a Report based on the depth of link being processed. 
             
 '''
 
-__verion__ = "0.0.1"
+__verion__ = "0.0.2"
 __date__ = "09th December 2013"
 __author__ = "Harsha Narayana"
 
 import argparse
 from deadcheck.deadcheck import Deadcheck
+from deadcheck.report.Report import Report
+import deadcheck.report
+import os
 
 # Parser For CLI using argparse utility. 
 parser = argparse.ArgumentParser(description='CLI Parser / Run Utility for deadcheck Tool.')
@@ -42,16 +47,30 @@ def runScript():
                        , auth_base=args.__dict__['_auth_base'], verbose=args.__dict__['_verbose'], log=args.__dict__['_log'], 
                        exempt=args.__dict__['_exempt'], depth=args.__dict__['_depth'])
     
+    if ( not os.path.isdir(args.__dict__['_out']) and args.__dict__['_out'] != None):
+        os.mkdir(args.__dict__['_out'])
+        
     dCheck.process()
     return dCheck
 
 def printDetails(dCheck):
     outFile = open('report.txt','w')
     for key in range(args.__dict__['_depth']+1):
+        fileCount = 0
         for elements in dCheck.getAll()[key]:
+            if ( args.__dict__['_out'] != None ):
+                rptPath = os.path.join(args.__dict__['_out'],'level'+str(key))
+                if ( not os.path.isdir(rptPath)):
+                    os.mkdir(os.path.join(args.__dict__['_out'],'level'+str(key)))
+                rptFile = os.path.join(rptPath, 'file'+str(fileCount)+'.html')
+                fileCount += 1 
+                rpt = Report(elements, rptFile, os.path.join(os.path.dirname(os.path.abspath(deadcheck.report.__file__)), 'Templates'))
+                rptFile = rpt.generate()
+                print 'File Name : ' + str(rptFile)
             for element in elements.getChildren():
                 print '-----------------------------'
                 print element.info()
+                print '\n Number Of Children : ' + str(len(element.getChildren()))
                 outFile.write("%s\n" %(element.info()))
     outFile.close()
             
@@ -80,6 +99,9 @@ parser.add_argument('-depth', action='store', type=int, dest='_depth',
                     metavar='Depth', default=1, help='Depth to which the links are to be analyzed. Default = 1')
 
 parser.add_argument('-v', action='store_true', dest='_verbose', default=True, help='Choose if the logs are to be displayed in the CLI')
+
+parser.add_argument('-out', action='store', type=str, dest='_out',
+                    metavar='OututDirectory', help='Output Directory to generate the reports.')
 
 args = parser.parse_args()
 

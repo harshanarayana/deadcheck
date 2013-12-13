@@ -5,10 +5,10 @@ Created on Nov 29, 2013
 
 @change:    2013-11-29    Initial Draft
             2013-12-06    Re-Structured the Code to support Data suitable for liche output format. 
-            
+            2013-12-10    Minor Chnages made into the Script to support the Report Generation. 
 '''
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __date__ = "06th December 2013"
 __author__ = "Harsha Narayana"
 
@@ -191,7 +191,7 @@ class Deadcheck(object):
         dlTime = ted - ts
         if ( self.__checkIfError(handle)):
             if ( handle[0] == 'HTTPError'):
-                eCode = ErrorCodes(handle[1])
+                eCode = ErrorCodes(int(handle[1]))
                 einfo = eCode.getError()[1]
             else:
                 einfo = handle[1]
@@ -268,7 +268,7 @@ class Deadcheck(object):
                             ted = time.time()
                             if ( self.__checkIfError(handle)):
                                 if ( handle[0] == 'HTTPError'):
-                                    eCode = ErrorCodes(handle[1])
+                                    eCode = ErrorCodes(int(handle[1]))
                                     einfo = eCode.getError()[1]
                                 else:
                                     einfo = handle[1]

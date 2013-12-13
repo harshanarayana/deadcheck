@@ -4,13 +4,15 @@ Created on Dec 3, 2013
 @author: harshanarayana
 
 @change:     2013-12-03    Initial Draft. A custom URLLinks class to Store and access information pertaining to a Single URL in Question
+             2013-12-10    Addditional Functionality included to Support the Report Generation in HTML Format
 
 '''
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __date__ = "06th December 2013"
 __author__ = "Harsha Narayana"
 
+import re
 
 class URLLinks(object):
     '''
@@ -241,3 +243,84 @@ class URLLinks(object):
         infoString += '\nInfo                  : ' + str(self.getInfo())
         return infoString
     
+    def getCount(self):
+        retData = []
+        __errCount = 0
+        __warCount = 0
+        __exeCount = 0
+        __skiCount = 0
+        __timCount = 0.0
+        retData.append(len(self.getChildren()))
+        for item in self.getChildren():
+            if ( 'ERROR' in item.getStatus().upper()):
+                __errCount += 1
+            elif ( 'WARNING' in item.getStatus().upper()):
+                __warCount += 1
+            elif ( 'EXEMPTED' in item.getStatus().upper()):
+                __exeCount += 1
+            elif ( 'SKIPPED' in item.getStatus().upper()):
+                __skiCount += 1
+            else:
+                pass
+            
+            if ( isinstance(item.getCheckTime(),float)):
+                __timCount += item.getCheckTime() 
+            
+        retData.append(__errCount)
+        retData.append(__warCount)
+        retData.append(__exeCount)
+        retData.append(__skiCount)
+        retData.append(__timCount)
+        return retData
+    
+    def __getStatusRow(self):
+        rowString = '<td bgcolor="#FFFFCC" class="$rowClassName">$statusInfo</td>'
+        statusInfo = self.getStatus().upper()
+
+        if ( 'ERROR' in statusInfo and ':' in statusInfo):
+            rowString = re.sub('\$rowClassName', 'error', rowString) 
+        elif ( statusInfo == 'OK' ):
+            rowString = re.sub('\$rowClassName', 'ok', rowString)
+        else:
+            rowString = re.sub('\$rowClassName', 'other', rowString)
+            
+        rowString = re.sub('\$statusInfo', statusInfo, rowString)
+        return rowString
+    
+    def __getIsProcessed(self):
+        rowString = '<td class="$rowClassName">$isProcessed</td>'
+        if ( self.isProcessed()):
+            rowString = re.sub('\$rowClassName', 'ok', rowString)
+        else:
+            rowString = re.sub('\$rowClassName', 'other', rowString)
+            
+        rowString = re.sub('\$isProcessed', str(self.isProcessed()), rowString)
+        return rowString
+    
+    def __getIsBroken(self):
+        rowString = '<td bgcolor="#FFFFCC" class="$rowClassName">$isBroken</td>'
+        
+        if ( self.isBroken()):
+            rowString = re.sub('\$rowClassName', 'ok', rowString)
+        else:
+            rowString = re.sub('\$rowClassName', 'other', rowString)
+            
+        rowString = re.sub('\$isBroken', str(self.isBroken()), rowString)
+        return rowString
+    
+    def getReportInfo(self):
+        retData = []
+        retData.append(self.getChildLink())
+        retData.append(self.getChildTitle())
+        retData.append(self.getParentLink())
+        retData.append(self.getParentTitle())
+        retData.append(self.__getStatusRow())
+        retData.append(self.__getIsProcessed())
+        retData.append(self.__getIsBroken())
+        retData.append(self.getType())
+        retData.append(self.getSize())
+        retData.append(self.getDLTime())
+        retData.append(self.getLastModified())
+        retData.append(self.getCheckTime())
+        retData.append(self.getInfo())
+        return retData
