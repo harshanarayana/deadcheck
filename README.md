@@ -32,7 +32,7 @@ https://www.assembla.com/spaces/deadcheck/tickets
 Pending Implementation
 ======================
 
-  - Report Generation. ( A custom Package / Using liches )
+  - ~~Report Generation. ( A custom Package / Using liches )~~
   - Handling the Processing of Links using Multiple Threads. ( To reduce processing time )
   - Regex support to Exception links. 
   - Additional Log / Debug Option Support. 
@@ -48,8 +48,8 @@ v0.0.1:
   - Analysis method and URLLinks class were combined together. 
   - Report Information Extraction was manual. 
 
-v0.0.2
-------
+v0.0.2:
+-------
 
   - Second Draft
   - Code Re-structured. Independent classes created for URLLinks, handling Custom Error and Other necessary informaiton.
@@ -76,3 +76,12 @@ v0.0.2
 
     - Main Package now containins a class **Deadcheck** which handles all the operations. 
     - User the Deadcheck class to perform any operations.
+
+v0.0.3:
+-------
+  
+  - Third Draft
+  - Report Generation Modules Included. 
+  - Custom report.txt file is generated along with the Report.
+  - Report Is generated based on the Links processed at the respective link depth. 
+  - A summary of Links Is provided for each report file. 
