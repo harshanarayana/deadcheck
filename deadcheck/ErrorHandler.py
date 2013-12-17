@@ -1,11 +1,13 @@
 '''
 Created on Dec 4, 2013
 
+A custom Error Handler class created for Custom Errors. 
+
 @author: harshanarayana
 
 @change:     2013-12-04    Initial Draft. A custom Class that can be used for Handling Custom Exceptions. Additional Info will be added 
                            during the course of development. 
-                            
+             2013-12-17    Documentaion Updated. 
 '''
 __version__ = "0.0.1"
 __date__ = "06th December 2013"

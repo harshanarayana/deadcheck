@@ -1,18 +1,28 @@
 '''
 Created on Dec 4, 2013
 
+A custom class created for Storing the HTTPError values which can later be used for reporting purpose. 
+
+This class initialized a hash containing the HTTPError code and its corresponding error messages. 
+
 @author: harshanarayana
 
-@change:     2013-12-04    Initial Draft. A custom Class contianing the list of Errors for HTTP. Will be used for Reporting. 
+@change:     2013-12-04    Initial Draft. A custom Class contianing the list of Errors for HTTP. Will be used for Reporting.
+             2013-12-17    Documentation Updated.
 
 '''
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __date__ = "06th December 2013"
 __author__ = "Harsha Narayana"
 
 class ErrorCodes(object):
     
     def __init__(self, errorCode):
+        '''
+        Constructor
+        
+        @param errorCode : HTTPError Code in Integer format. 
+        '''
         self.__errorCode = errorCode
         self.__errMessage = { 
     100: ('Continue', 'Request received, please continue'),
@@ -81,13 +91,28 @@ class ErrorCodes(object):
     }
         
     def getErrorCode(self):
+        '''
+        Get method for HTTPError Code
+        
+        @return: self.__errorCode
+        '''
         return self.__errorCode
     
     def getError(self):
+        '''
+        Get method for HTTPError information. The return data is a Tuple. 
+        
+        @return: self.__errMessage[self.__errorCode]
+        
+        The 1st Element of Tuple is the Short Description and the 2nd Element is the long description. 
+        '''
         if ( self.__errMessage.has_key(self.getErrorCode())):
             return self.__errMessage[self.getErrorCode()]
         else:
             return ('Unknown Error', 'No Error Code Information found in the Library')
         
     def setErrorCode(self, value):
+        '''
+        Set method for HTTPError Code. 
+        '''
         self.__errorCode = value

@@ -1,14 +1,20 @@
 '''
 Created on Nov 29, 2013
 
+A custom class that is used for Creating and Processing deadlink check related entities. 
+
+This is the base class that is used from the Run script for the purpose of analyzing the deadlinks in a
+base URL. 
+
 @author: harshanarayana
 
 @change:    2013-11-29    Initial Draft
             2013-12-06    Re-Structured the Code to support Data suitable for liche output format. 
-            2013-12-10    Minor Chnages made into the Script to support the Report Generation. 
+            2013-12-10    Minor Chnages made into the Script to support the Report Generation.
+            2013-12-17    Documentaiton Updated
 '''
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __date__ = "06th December 2013"
 __author__ = "Harsha Narayana"
 
@@ -25,12 +31,45 @@ import httplib
 import re
 
 class Deadcheck(object):
-    
-    __levelBasedLinks = {}
-    __ProcessedLinks = {}
-    __exemptedItems = []
+    '''
+        A custom class created for the Purpose of Handling the Deadlink analysis process. 
         
+        This takes in the Arguments from either the CLI processed function call / object creation method and
+        handles the arguments to process and extract necessary information. 
+        
+        These data so created are later used for the purpose of generating the report using Report modules. 
+    '''
+    
+    # Hash used for Storing the Level Based URLLink Objects. Each level stores a list of object that belong to that specific level
+    # and are valid for the purpose of Processing further. 
+    __levelBasedLinks = {}
+    # Hash used for storing the information of the URL that are already processed. This is used to avoid the ducplicate processing
+    # of the links and hence saving considerable about of valuable time. 
+    __ProcessedLinks = {}
+    # List of Exempted links of Expressions. Any link matcing one or more entity in this array is exempted from processing. 
+    __exemptedItems = []
+         
     def __init__(self, url, proxy=None, username=None, password=None, auth_base=None, verbose=True, log=None, exempt=None, depth=1):
+        '''
+        Constructor. 
+        
+        @param url      : Base URL which needs to be analyzed for Deadlinks. 
+        @param proxy    : Proxy URL that needs to be used in case if you are running the tool from a machine in which
+                          access to the Internet is provided through a Proxy site.
+                          Format : <proxyURL>:<port>
+        @param username : Username that needs to be used for accesing a password protected page during analysis. If any. 
+                          If no informaiton is provided, such links will be branded as WARNINGS. 
+        @param passsword : Password for accessing protected page. 
+        @param auth_base : Base URL that can be used to authenticate the Protected pages. If no value is provided, then base url
+                           that is being analyzed itself is used as the SUPER URL. 
+        @param exempt   : File containing the list of links that are to be exmepted. Or pattern which are to be considered for 
+                          exempting the URL from processing. 
+        @param verbose  : Dispaly STDOUT Messages during processing. 
+        @param log      : Log file name. 
+        @param depth    : Depth to which the links are to be processed. Default = 1. i.e All links that are part of the Base URL are 
+                          processed and analyzed for deadlinks.
+     
+        '''
         self._url = url
         self._proxy = proxy
         self._username = username
@@ -45,38 +84,67 @@ class Deadcheck(object):
         self.__processBaseURL()
 
     def getAll(self):
+        '''
+        Get method of Level Based URLLink objects. 
+        
+        @return: Deadcheck.__levelBasedLinks
+        '''
         return Deadcheck.__levelBasedLinks
     
     def get_depth(self):
+        '''
+        Get method for Depth
+        '''
         return self._depth
     
     def set_depth(self,value):
+        '''
+        Set method for Depth
+        '''
         self._depth = value
         
-    def del_depth(self):
-        del self._depth
-        
     def get_dict(self):
+        '''
+        Get method for __dict__ variable of Deadcheck class. 
+        
+        @return: self.__dict__
+        '''
         return self.__dict__
 
 
     def get_url(self):
+        '''
+        Get method for URL
+        '''
         return self.__url
 
 
     def get_proxy(self):
+        
+        '''
+        Get method for Proxy
+        '''
         return self.__proxy
 
 
     def get_verbose(self):
+        '''
+        Get metod for Verbose status
+        '''
         return self.__verbose
 
 
     def get_log(self):
+        '''
+        Get method for Log file information
+        '''
         return self.__log
 
 
     def get_exempt(self):
+        '''
+        Get method for Exempted file
+        '''
         return self.__exempt
 
 
@@ -113,6 +181,10 @@ class Deadcheck(object):
 
         
     def __verifyAndValidate(self):
+        '''
+        Private member that is called from __init__ to verify and validate the Arguments that are used for creating
+        Deadcheck type of Objects. 
+        '''
         self.__checkAndSetLog()    
         if ( not self.__checkKey('_url')):
             raise ArgumentMissingError('Paramenter for argument \'-url\' is missing.','-url')
@@ -131,6 +203,12 @@ class Deadcheck(object):
             
     
     def __checkAndSetUrlLib(self):
+        '''
+        Private member function called for Analyzing and setting Proxy settings for the urllib2. 
+        
+        This helps in accessing and downloading the contenst from the web for later processing and
+        parsing of the contents.
+        '''
         __proxy = None
         __auth = None
         __opener = None
@@ -153,6 +231,9 @@ class Deadcheck(object):
             urllib2.install_opener(__opener)
             
     def __checkAndSetLog(self):
+        '''
+        Private member function used for Settingup configuration of the logger module. 
+        '''
         if ( self.__checkKey('_verbose')):
             if ( self.__checkKey('_log')):
                 logging.basicConfig(level=logging.DEBUG, filename=self.__dict__['_log'], format='%(name)s : %(levelname)s : %(message)s')
@@ -162,6 +243,10 @@ class Deadcheck(object):
             logging.basicConfig(level=logging.ERROR)
     
     def __size(self, size):
+        '''
+        Private member function used for Converting bytes into Human readable file size for display purpose. 
+        
+        '''
         for x in ['bytes','KB','MB','GB']:
             if size < 1024.0 and size > -1024.0:
                 return "%3.1f%s" % (size, x)
@@ -169,11 +254,22 @@ class Deadcheck(object):
         return "%3.1f%s" % (size, 'TB')
      
     def __checkIfError(self, value):
+        '''
+        Private member function to check if the Value retured from the function __getDataFromURL is an Errors. 
+        
+        '''
         if ( 'HTTPError' in value or 'URLError' in value or 'HTTPException' in value or 'Generic Exception' in value):
             return True
         else:
             return False
     def __raiseError(self, value, *url):
+        '''
+        Private member function used for raising different types of Errors that one may encounter 
+        during the processign or downloading of the page. 
+        
+        This value is used for setting the status of the URLLinks objects and the same is used for 
+        reporting purpose later on. 
+        '''
         if ( value[0] == 'HTTPError'):
             eCode = ErrorCodes(int(value[1]))
             raise urllib2.HTTPError(url[0], int(value[1]), eCode.getError(), None, None)
@@ -185,6 +281,15 @@ class Deadcheck(object):
             raise Exception(value[0] + ' : ' + value[1])
         
     def __processBaseURL(self):
+        '''
+        Private member function used for Processing the base URL.
+        
+        Process the base URL and extract the links from them and create URLLinks object for each links extracted. 
+        Each of these objects are pushed as the child entry of the Main URLLinks object created for the Base URL. 
+        
+        These child objects are later accessed in a loop and processed further to check for their validity, depending 
+        on the depth to which they belong. 
+        '''
         ts = time.time()
         handle = self.__getDataFromURL(self.__dict__['_url'])
         ted = time.time()
@@ -229,6 +334,9 @@ class Deadcheck(object):
             Deadcheck.__levelBasedLinks[0].append(urlObj)
     
     def __loadExempt(self):
+        '''
+        Private member function used for Loading Exemptions from the Import File. 
+        '''
         try:
             with open(str(self.__dict__['_exempt'])) as eFile:
                 for line in eFile:
@@ -237,6 +345,14 @@ class Deadcheck(object):
             self.__printWarning('Unable to get information from the exceptions file.')
     
     def __checkExempt(self, url):
+        '''
+        Private member function used for chekcing if the URL being processed is exempted. 
+        
+        The exemptions file can contain the exact link or the pattern that will have to be exempted. 
+        If a match is found in either, that specific link is exempted and the next is picked up for processing. 
+
+        Status of the object which was exempted is set apropriately based on the return value of this method. 
+        '''
         exItem = Deadcheck.__exemptedItems
         if ( len(exItem) > 0 ):
             exItem = [ str(item) if not str(item).startswith('*') else '.'+str(item) for item in exItem]
@@ -251,6 +367,21 @@ class Deadcheck(object):
             return False
         
     def process(self):
+        '''
+        Method that will be called using the Deadcheck object from the Main script to instruct the 
+        module to process the links based on the depth to which they belong to. 
+        
+        Each of the link is extracted from the childURL list that belongs to the parent URLLinks object and 
+        processed after checking for exemptions. 
+        
+        Based on the processing, the apropriate parameters and values are set using the set method available in the
+        URLLinks class. 
+        
+        Each page being processed has its own list of the Child URL that are extracted and pushed into an array. 
+        
+        These list of URLs are processed during the next depth / level value. 
+        
+        '''
         self.__loadExempt()
         if ( self.get_depth() == 0 ):
             self.__analyze() 
@@ -339,6 +470,11 @@ class Deadcheck(object):
     def __analyze(self):
         pass        
     def __getURLTitle(self, handle):
+        '''
+        Private member method used for Obtaining the data of the <title> tag. 
+        
+        If there is no valid <title> tag exists, <Unknown> is used as the value instread. 
+        '''
         if handle == None:
             title = '<Unknown>'
             return title
@@ -351,6 +487,9 @@ class Deadcheck(object):
         return title
     
     def __getURLInfo(self, handle):
+        '''
+        Private member function used for obtaining the file size and last modifed date of the URL under process. 
+        '''
         if ( handle.info().dict.has_key('last-modified')):
             lastModified = handle.info()['last-modified']
         else:
@@ -366,11 +505,21 @@ class Deadcheck(object):
         return (linkType, lastModified, size)
     
     def __links(self, handle):
+        '''
+        Private member method used for obtaining a list of URL extracted from the data downloaded. 
+        
+        urllib2 is used for dowloading the data and lxml is used for processing and extracting the 
+        valid list of URL that can later be processed based on the condition and requirement. 
+        '''
         if handle == None:
             return []
         return handle.findall('.//*[@href]')
             
     def __getDataFromURL(self, urlLink):
+        '''
+        Private member method that downloads the Data for a URL and returns the information to the 
+        calling function which is later used for processing and extracting purpose. 
+        '''
         try:
             htmlData = urllib2.urlopen(urlLink, timeout=10)
             return (htmlData)
@@ -388,13 +537,25 @@ class Deadcheck(object):
             return error
             
     def __printMessage(self, message):
+        '''
+        Print Log Message
+        '''
         logging.info(message)
         
     def __printWarning(self, message):
+        '''
+        Print Warning message
+        '''
         logging.warning(message)
         
     def __printError(self, message):
+        '''
+        Print Error Message
+        '''
         logging.error(message)
                     
     def __checkKey(self,key):
+        '''
+        Private member method that checks and verifies if a value in the self.__dict__ is set and not None. 
+        '''
         return self.__dict__.has_key(key) and self.__dict__[key] != None        
