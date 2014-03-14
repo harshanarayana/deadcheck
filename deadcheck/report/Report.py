@@ -13,15 +13,18 @@ control over what type of links are reported in the files. ( Will be implemented
 
 The report so generated also makes use of a css file to format the Content in the UI. You can 
 customize the css file to get the report in a way that is more suitable for you. However, care is to 
-be ensured that the file is placed in its origional location for the report generation to work flawlessly. 
+be ensured that the file is placed in its original location for the report generation to work flawlessly. 
 
 @author: Harsha Narayana
 
 @change:     2013-12-13    Initial Draft
-             2013-12-17    Documentation Updated. 
+             2013-12-17    Documentation Updated.
+             2014-03-12    __writeTableData module updated to fix UnicodeEncodeError.    
+                           Bug #3 : https://www.assembla.com/spaces/deadcheck/tickets/3#/activity/ticket:
+                           Bug #1 : https://github.com/harshanarayana/deadcheck/issues/1
 '''
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __author__ = "Harsha Narayana"
 __date__ = "Dec 12, 2013"
 
@@ -143,7 +146,8 @@ class Report(object):
         with open(outFile, 'a') as oStream:
             for element in obj.getChildren():
                 info = element.getReportInfo()
-                info = [ str(item) for item in info]
+                # Bugfix : 2014-03-12    __writeTableData module updated to fix UnicodeEncodeError.
+                info = [ str(repr(item)) for item in info]
                 for line in template:
                     line = line.lstrip().rstrip()
                     if ( '$cLinkUrl' in line ):
@@ -241,7 +245,8 @@ class Report(object):
              
         '''
         iCount = obj.getCount()
-        iCount = [str(item) for item in iCount]
+        # Bugfix : 2014-03-12    __generateTail module updated to fix UnicodeEncodeError.
+        iCount = [str(repr(item)) for item in iCount]
         tailFile = os.path.abspath(os.path.join(self.__getTemplatePath(), 'tail.template'))
         outFile = self.getOutFile()
         with open(outFile,'a') as oStream:
