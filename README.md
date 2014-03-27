@@ -36,7 +36,7 @@ Pending Implementation
   - Handling the Processing of Links using Multiple Threads. ( To reduce processing time )
   - Regex support to Exception links. 
   - Additional Log / Debug Option Support. 
-  - GUI 
+  - GUI ( Work In Progress ) 
 
 Change Log
 ==========
@@ -85,3 +85,9 @@ v0.0.3:
   - Custom report.txt file is generated along with the Report.
   - Report Is generated based on the Links processed at the respective link depth. 
   - A summary of Links Is provided for each report file. 
+
+v0.0.4:
+-------
+  - Low-level URL extraction from 'javascript' type hrefs. 
+  - Fix for UnicodeEncodeError.
+  - Minor Cleanup / change for the reports. 
