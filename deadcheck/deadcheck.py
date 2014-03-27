@@ -12,9 +12,11 @@ base URL.
             2013-12-06    Re-Structured the Code to support Data suitable for liche output format. 
             2013-12-10    Minor Chnages made into the Script to support the Report Generation.
             2013-12-17    Documentaiton Updated
+            2014-03-27    __cleanupJavaScript functionality included to provide low level URL extraction for 
+                          javascript:openWindow method used for URL Opening. <Further enhancement required>.
 '''
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __date__ = "06th December 2013"
 __author__ = "Harsha Narayana"
 
@@ -392,8 +394,13 @@ class Deadcheck(object):
                     for obj in vobj.getChildren():
                         t1 = time.time()
                         (url, title) = obj.get()
-                        if ( not Deadcheck.__ProcessedLinks.has_key(url) and not self.__checkExempt(url) and 'javascript' not in url.lower()):
+                        #if ( not Deadcheck.__ProcessedLinks.has_key(url) and not self.__checkExempt(url) and 'javascript' not in url.lower()):
+                        if ( not Deadcheck.__ProcessedLinks.has_key(url) and not self.__checkExempt(url) ):
                             Deadcheck.__ProcessedLinks[url] = 1
+                            # Process javascript:openWindow type URL to extract necessary links. 
+                            if ( 'javascript' in url.lower()):
+                                url = self.__cleanupJavaScript(url)
+                                
                             ts = time.time()
                             handle = self.__getDataFromURL(url)
                             ted = time.time()
@@ -468,7 +475,22 @@ class Deadcheck(object):
                                 obj.setType(None)
                                 obj.setCheckTime(None)
     def __analyze(self):
-        pass        
+        pass  
+          
+    # 2014-03-27    : Javascript clean up added for low level processing of URL. 
+    def __cleanupJavaScript(self, url):
+        '''
+        Private member method used for cleaning up javascript:openWindow method. 
+        
+        This is just a basic verion of the cleanup functionality that might not be a perfect one. 
+        
+        Further development is suggested. Also, Please verify the results obtained using this. 
+        '''
+        tempPath = urlparse.urlparse(url).path
+        tempURL = re.search("(?P<url>http\s?://[^\s].[^\s]+',')", tempPath).group("url")
+        cleanURL = re.sub("','","",tempURL)
+        return cleanURL
+        
     def __getURLTitle(self, handle):
         '''
         Private member method used for Obtaining the data of the <title> tag. 

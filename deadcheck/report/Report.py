@@ -188,6 +188,8 @@ class Report(object):
                         
                     if ( '$addInfo' in line ):
                         line = re.sub( '\$addInfo', info[12], line)
+                    
+                    line = re.sub("'","",line)    
                     oStream.write('%s' %(line))
             oStream.close()
                 
