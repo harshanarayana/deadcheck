@@ -86,8 +86,8 @@ v0.0.3:
   - Report Is generated based on the Links processed at the respective link depth. 
   - A summary of Links Is provided for each report file. 
 
-v0.0.4:
--------
+ v0.0.3.1:
+ ---------
   - Low-level URL extraction from 'javascript' type hrefs. 
   - Fix for UnicodeEncodeError.
   - Minor Cleanup / change for the reports. 
