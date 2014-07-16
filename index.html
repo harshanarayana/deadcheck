@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Deadcheck by harshanarayana</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Deadcheck</h1>
+        <p class="header">Deadlink Check Utility</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/harshanarayana/deadcheck/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/harshanarayana/deadcheck/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/harshanarayana/deadcheck">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/harshanarayana">harshanarayana</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a name="description" class="anchor" href="#description"><span class="octicon octicon-link"></span></a>Description</h1>
+
+<p></p>
+
+<p>This is a tool that can be used for Analyzing and identifying the Deadlink in a website. This can come handy during the regular website maintenance. </p>
+
+<p>The contents uploaded here is only the Alpha content. I've uploaded it here to get some feedback and suggestion as to how I can make this more efficient. </p>
+
+<p>Any suggestion / comment / feedback / request is welcome. Please drop any of these messages using the following link. </p>
+
+<p><a href="https://www.assembla.com/spaces/deadcheck/tickets">https://www.assembla.com/spaces/deadcheck/tickets</a></p>
+
+<p><strong>Installation</strong> </p>
+
+<pre><code>   pip install lxml
+   pip install deadcheck
+
+   or 
+
+   pip install lxml
+   git clone git@github.com:harshanarayana/deadcheck.git
+   python setup.py install
+</code></pre>
+
+<p><strong>Usage</strong> </p>
+
+<pre><code>    prompt&gt;python run.py -url &lt;baseURLToAnalyze&gt; [-proxy &lt;proxyURL&gt;:&lt;prompt&gt; -username &lt;userName for Protected Page&gt; 
+    -password &lt;Password to access Protected Page&gt; -auth_base &lt;Super URL for Authentication&gt; -log &lt;logFile&gt; 
+    -exempt &lt;ExceptionURL File&gt; -depth &lt;int, default = 1&gt; -v &lt;default = True&gt;]
+</code></pre>
+
+<h1>
+<a name="pending-implementation" class="anchor" href="#pending-implementation"><span class="octicon octicon-link"></span></a>Pending Implementation</h1>
+
+<ul>
+<li><del>Report Generation. ( A custom Package / Using liches )</del></li>
+<li>Handling the Processing of Links using Multiple Threads. ( To reduce processing time )</li>
+<li>Regex support to Exception links. </li>
+<li>Additional Log / Debug Option Support. </li>
+<li>GUI ( Work In Progress ) </li>
+</ul><h1>
+<a name="change-log" class="anchor" href="#change-log"><span class="octicon octicon-link"></span></a>Change Log</h1>
+
+<h2>
+<a name="v001" class="anchor" href="#v001"><span class="octicon octicon-link"></span></a>v0.0.1:</h2>
+
+<ul>
+<li>Initial Draft</li>
+<li>Analysis method and URLLinks class were combined together. </li>
+<li>Report Information Extraction was manual. </li>
+</ul><h2>
+<a name="v002" class="anchor" href="#v002"><span class="octicon octicon-link"></span></a>v0.0.2:</h2>
+
+<ul>
+<li>Second Draft</li>
+<li>Code Re-structured. Independent classes created for URLLinks, handling Custom Error and Other necessary informaiton.</li>
+<li>
+<p><strong>URLLinks</strong></p>
+
+<ul>
+<li>Custom Class for Storing URL information. </li>
+<li>info() method for accessing the URLLink information in the form of a string to display / Report. </li>
+<li>
+<p>Additional parameters included for Reporting. </p>
+
+<ul>
+<li>File Size</li>
+<li>Dowload Time</li>
+<li>Check Time</li>
+<li>Last Modified. </li>
+<li>Status Information ( With Error and / or other information as applicable )</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>ErrorCodes</strong></p>
+
+<ul>
+<li>Custom class created for Storing and retrieving HTTPError codes with suitable messages. </li>
+</ul>
+</li>
+<li>
+<p><strong>ErrorHandler</strong> </p>
+
+<ul>
+<li>Custom Error handler class for Handling Custom errors. Additional items will be added to this during the course of development. </li>
+</ul>
+</li>
+<li>
+<p><strong>deadcheck</strong></p>
+
+<ul>
+<li>Main Package now containins a class <strong>Deadcheck</strong> which handles all the operations. </li>
+<li>User the Deadcheck class to perform any operations.</li>
+</ul>
+</li>
+</ul><h2>
+<a name="v003" class="anchor" href="#v003"><span class="octicon octicon-link"></span></a>v0.0.3:</h2>
+
+<ul>
+<li>Third Draft</li>
+<li>Report Generation Modules Included. </li>
+<li>Custom report.txt file is generated along with the Report.</li>
+<li>Report Is generated based on the Links processed at the respective link depth. </li>
+<li>
+<p>A summary of Links Is provided for each report file. </p>
+
+<h2>
+<a name="v0031" class="anchor" href="#v0031"><span class="octicon octicon-link"></span></a>v0.0.3.1:</h2>
+</li>
+<li>Low-level URL extraction from 'javascript' type hrefs. </li>
+<li>Fix for UnicodeEncodeError.</li>
+<li>Minor Cleanup / change for the reports. </li>
+</ul>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
