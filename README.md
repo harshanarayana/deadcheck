@@ -35,7 +35,7 @@ Pending Implementation
   - ~~Report Generation. ( A custom Package / Using liches )~~
   - Handling the Processing of Links using Multiple Threads. ( To reduce processing time )
   - ~~Regex support to Exception links. (Implemented for Basic RegExp)~~ 
-  - Additional Log / Debug Option Support. 
+  - ~~Additional Log / Debug Option Support.(Change Implemented)~~ 
   - GUI ( Work In Progress ) 
 
 Change Log
