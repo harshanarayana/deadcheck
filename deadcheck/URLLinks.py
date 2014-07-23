@@ -5,10 +5,10 @@ This class was created to store the details of the URL links that are being proc
 child URL that are extracted from that specific link under process. 
 
 Each Link has a parent link and parent Title along with its own title and link information. This calss
-also makes it a point to store the informaiton like Last modification date of the file, size of the file
+also makes it a point to store the information like Last modification date of the file, size of the file
 and time taken to download the file and time taken to parse and process the content of the file. 
 
-Differenct variables are used for storing these information along with the values like If the link is broken 
+Different variables are used for storing these information along with the values like If the link is broken 
 or not, if link is processed, status information, comment/additional Information along with type of the link that
 current URL refers to. 
 
@@ -21,11 +21,13 @@ in the logs or for reporting purpose.
 
 @change:     2013-12-03    Initial Draft. A custom URLLinks class to Store and access information pertaining to 
                            a Single URL in Question
-             2013-12-10    Addditional Functionality included to Support the Report Generation in HTML Format
-             2013-12-17    Documentation Updated. 
+             2013-12-10    Additional Functionality included to Support the Report Generation in HTML Format
+             2013-12-17    Documentation Updated.
+             2014-07-23    Minor changes made into info() function to avoid Character Encoding issue that might be 
+                           encountered during the Runtime. 
 '''
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __date__ = "06th December 2013"
 __author__ = "Harsha Narayana"
 
@@ -336,9 +338,9 @@ class URLLinks(object):
         '''
         infoString = ''
         infoString += '\nCurrent URL           : ' + str(self.getChildLink())
-        infoString += '\nCurrent URL Title     : ' + str(self.getChildTitle()) 
+        infoString += '\nCurrent URL Title     : ' + str(repr(self.getChildTitle())) 
         infoString += '\nParent URL            : ' + str(self.getParentLink())
-        infoString += '\nParent Title          : ' + str(self.getParentTitle())
+        infoString += '\nParent Title          : ' + str(repr(self.getParentTitle()))
         infoString += '\nStatus                : ' + str(self.getStatus())
         infoString += '\nIs Broken             : ' + str(self.isBroken())
         infoString += '\nIs Processed          : ' + str(self.isProcessed())
@@ -455,9 +457,9 @@ class URLLinks(object):
         '''
         retData = []
         retData.append(self.getChildLink())
-        retData.append(self.getChildTitle())
+        retData.append(repr(self.getChildTitle()))
         retData.append(self.getParentLink())
-        retData.append(self.getParentTitle())
+        retData.append(repr(self.getParentTitle()))
         retData.append(self.__getStatusRow())
         retData.append(self.__getIsProcessed())
         retData.append(self.__getIsBroken())

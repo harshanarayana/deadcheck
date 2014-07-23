@@ -7,17 +7,18 @@ Created on Dec 3, 2013
              2013-12-09    :    Changes Made for release 0.0.2
              2013-12-13    :    Installation Script modified to support Static data that are being used for
                                 report generation as templates.
-             2014-03-12    :    New release to support Bug Fix. 
+             2014-03-12    :    New release to support Bug Fix.
+             2014-07-16    :    New Release to Support Additional Logging and RegExp Support in Exemptions File. V 0.0.3.2
 '''
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 __author__ ="Harsha Narayana"
 __date__ = "03 Dec 2013"
 
 from setuptools import setup, find_packages
 
 setup( name         = "deadcheck",
-       version      = "0.0.3.1",
+       version      = "0.0.3.2",
        description  = "Deadlink Check Utility using Python Modukles",
        author       = "Harsha Narayana",
        author_email = "harsha2k4@gmail.com",

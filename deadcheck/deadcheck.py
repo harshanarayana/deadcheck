@@ -14,9 +14,11 @@ base URL.
             2013-12-17    Documentaiton Updated
             2014-03-27    __cleanupJavaScript functionality included to provide low level URL extraction for 
                           javascript:openWindow method used for URL Opening. <Further enhancement required>.
+            2014-07-16    Additional Support for RegExp in Exemptions file and Logging Information Included.
+            2014-07-17    Change Implemented to Avoid AttributeError When the RegExp Fails to Match the URL.
 '''
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __date__ = "06th December 2013"
 __author__ = "Harsha Narayana"
 
@@ -398,6 +400,7 @@ class Deadcheck(object):
                         if ( not Deadcheck.__ProcessedLinks.has_key(url) and not self.__checkExempt(url) ):
                             Deadcheck.__ProcessedLinks[url] = 1
                             # Process javascript:openWindow type URL to extract necessary links. 
+                            self.__printMessage("Processing Link : " + url);
                             if ( 'javascript' in url.lower()):
                                 url = self.__cleanupJavaScript(url)
                                 
@@ -421,6 +424,7 @@ class Deadcheck(object):
                                 obj.setCheckTime(ted-ts)
                                 
                                 print 'Broken ' + str(obj.get()) 
+                                self.__printError('Broken Link ' + str(obj.get()));
                             else:
                                 ts = time.time()
                                 htmlData = urllib2.urlopen(url)
@@ -461,12 +465,14 @@ class Deadcheck(object):
                                 if ( self.__checkExempt(url)):
                                     obj.setInfo('Exempted based on the Input file : ' + self.__dict__['_exempt'])
                                     obj.setStatus('EXEMPTED')
+                                    self.__printWarning("URL Exempted : " + url);
                                 elif ( 'javascript' in url ):
                                     obj.setInfo('Javascript Links are not processed. Implementation underway.')
                                     obj.setStatus('WARNING')
                                 else:
                                     obj.setInfo('URL Already Processed. Will not be processed again.')
-                                    obj.setStatus('SKIPPED')    
+                                    obj.setStatus('SKIPPED')
+                                    self.__printWarning("Skipping URL : " + url);    
                                 obj.setProcessed(True)
                                 obj.setBroken(False)
                                 obj.setDLTime(None)
@@ -475,6 +481,10 @@ class Deadcheck(object):
                                 obj.setType(None)
                                 obj.setCheckTime(None)
     def __analyze(self):
+        '''
+        Support For Analyzing Independed URL if required. 
+        Return Data will be a String Containing the analysis Results
+        ''' 
         pass  
           
     # 2014-03-27    : Javascript clean up added for low level processing of URL. 
@@ -486,6 +496,16 @@ class Deadcheck(object):
         
         Further development is suggested. Also, Please verify the results obtained using this. 
         '''
+        
+        '''
+        Change Implemented to Avoid AttributeError When the RegExp Fails to Match the URL. 
+        Date             2014-07-17
+        Bug              #3
+        User             Harsha Narayana
+        Comment          Testing completed for Bug Fix, Upto 4th Level from Base URL. 
+        '''
+        # Replace all " with ' for RegExp Matching. 
+        url = re.sub('"',"'", url) 
         tempPath = urlparse.urlparse(url).path
         tempURL = re.search("(?P<url>http\s?://[^\s].[^\s]+',')", tempPath).group("url")
         cleanURL = re.sub("','","",tempURL)
