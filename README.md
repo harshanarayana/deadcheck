@@ -91,3 +91,8 @@ v0.0.3:
   - Low-level URL extraction from 'javascript' type hrefs. 
   - Fix for UnicodeEncodeError.
   - Minor Cleanup / change for the reports. 
+  
+ v0.0.3.2:
+ ---------
+  - Fix for AttributeError in __cleanupJavaScript Function ( Bug #3 ) 
+  - Minor Modification for RegExp used in Exceptions file.
