@@ -96,3 +96,9 @@ v0.0.3:
  ---------
   - Fix for AttributeError in __cleanupJavaScript Function ( Bug #3 ) 
   - Minor Modification for RegExp used in Exceptions file.
+  
+ V0.0.3.3:
+ ---------
+  - Addition of new Class 'DeadcheckAPI' that provides the user with a small scare function that can be used to analyze a single URL in the CLI
+  - The Return value of this function call will be **URLLinks** Object and hence you can interate through the Child Links and call the function 
+    **amIDead** manually to analyze 'n' number of links.  

@@ -16,10 +16,12 @@ base URL.
                           javascript:openWindow method used for URL Opening. <Further enhancement required>.
             2014-07-16    Additional Support for RegExp in Exemptions file and Logging Information Included.
             2014-07-17    Change Implemented to Avoid AttributeError When the RegExp Fails to Match the URL.
+            2017-07-28    Additional class 'DeadcheckAPI' was included to support the Usage of the tool through
+                          command line to perform the analysis of individual URLs
 '''
 
-__version__ = "0.0.6"
-__date__ = "06th December 2013"
+__version__ = "0.0.7"
+__date__ = "28th July, 2014"
 __author__ = "Harsha Narayana"
 
 
@@ -601,3 +603,173 @@ class Deadcheck(object):
         Private member method that checks and verifies if a value in the self.__dict__ is set and not None. 
         '''
         return self.__dict__.has_key(key) and self.__dict__[key] != None        
+    
+    
+class DeadcheckAPI(object):
+    '''
+       A Custom Class Created to support the usage of the Tool in the command line. 
+       
+       This class allows the user to check and validate each URL manually based on their requirement. 
+    '''
+    ## Constructor
+    def __init__(self, proxy = None, username = None, password = None, auth_base = None):
+        self._proxy = proxy
+        self._username = username
+        self._password = password
+        self._auth_base = auth_base
+        self.__configure();
+        
+    def __configure(self):
+        __proxy = None
+        __auth = None
+        __opener = None
+        
+        if ( self.__checkKey('_proxy')):
+            __proxy = urllib2.ProxyHandler({'http':self.__dict__['_proxy'], 'https':self.__dict__['_proxy']})
+            __opener = urllib2.build_opener(__proxy)
+            
+        if ( self.__checkKey('_username') and self.__checkKey('_password')):
+            passManager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            if ( self.__checkKey('_auth_base')):
+                passManager.add_password(None, self.__dict__['_auth_base'], self.__dict__['_username'], self.__dict__['_password'])
+                __auth = urllib2.HTTPBasicAuthHandler(passManager)
+                __opener = urllib2.build_opener(__auth)
+            
+            if ( __opener != None ):
+                urllib2.install_opener(__opener)
+                
+                        
+    def __checkKey(self, key):
+        return self.__dict__.has_key(key) and self.__dict__[key] != None
+    
+    def __size(self, size):
+        '''
+        Private member function used for Converting bytes into Human readable file size for display purpose. 
+        
+        '''
+        for x in ['bytes','KB','MB','GB']:
+            if size < 1024.0 and size > -1024.0:
+                return "%3.1f%s" % (size, x)
+            size /= 1024.0
+        return "%3.1f%s" % (size, 'TB')
+    
+    def __getDataFromURL(self, urlLink):
+        '''
+        Private member method that downloads the Data for a URL and returns the information to the 
+        calling function which is later used for processing and extracting purpose. 
+        '''
+        try:
+            htmlData = urllib2.urlopen(urlLink, timeout=10)
+            return (htmlData)
+        except urllib2.HTTPError, e:
+            error = ('HTTPError', str(e.getcode()))
+            return error
+        except urllib2.URLError, e:
+            error = ('URLError', str(e.reason))
+            return error
+        except httplib.HTTPException, e:
+            error = ('HTTPException', str(e.message))
+            return error
+        except Exception, e:
+            error = ('Generic Exception', e.message)
+            return error
+            
+    def amIDead(self, urlToCheck):
+        return self.__analyze(urlToCheck)
+        
+    def __analyze(self, url):
+        ts = time.time()
+        handle = self.__getDataFromURL(url)
+        ted = time.time()
+        dlTime = ted - ts
+        if ( self.__checkIfError(handle)):
+            if ( handle[0] == 'HTTPError'):
+                eCode = ErrorCodes(int(handle[1]))
+                einfo = eCode.getError()[1]
+            else:
+                einfo = handle[1]
+            urlObject = URLLinks(url, None, url, None, isProcessed=True, isBroken=True, 
+                                 size='<Unknown>', dlTime=dlTime, checkTime=dlTime, lastModified='<Unknwon>', info=einfo,status=handle[0] + ' : ' + handle[1], lType='<Unknwon>')
+            return urlObject
+        else:
+            ts = time.time()
+            htmlData = urllib2.urlopen(url)
+            ted = time.time()
+            data = etree.HTML(htmlData.read())
+            dlTime  =   ted - ts
+            title = self.__getURLTitle(data)
+            links = self.__links(data)
+            (lTtype, lastChagned, size) = self.__getURLInfo(handle)
+            status = 'OK'
+            urlObj = URLLinks(url, title, url, title, isProcessed=True, isBroken=False, size=size, dlTime=dlTime, 
+                              lastModified=lastChagned, info='Successfully Processed', status=status, lType=lTtype)
+            for link in links:
+                cLink = str(link.attrib['href']).lstrip().rstrip()
+                if ( cLink.startswith('#') or cLink.startswith('.') or cLink.startswith('..') or url not in cLink):
+                    cLink = urlparse.urljoin(url, cLink)
+                
+                if ( url in cLink):
+                    cTitle = link.text
+                    temp = URLLinks(url, title, cLink, cTitle)
+                    urlObj.addChild(temp)
+            te = time.time()
+            cTime = te - ts
+            urlObj.setCheckTime(cTime)
+            
+            return urlObj
+                    
+    def __links(self, handle):
+        '''
+        Private member method used for obtaining a list of URL extracted from the data downloaded. 
+        
+        urllib2 is used for dowloading the data and lxml is used for processing and extracting the 
+        valid list of URL that can later be processed based on the condition and requirement. 
+        '''
+        if handle == None:
+            return []
+        return handle.findall('.//*[@href]')
+                
+    def __getURLTitle(self, handle):
+        '''
+        Private member method used for Obtaining the data of the <title> tag. 
+        
+        If there is no valid <title> tag exists, <Unknown> is used as the value instread. 
+        '''
+        if handle == None:
+            title = '<Unknown>'
+            return title
+        tData = handle.find('.//title')
+        if tData == None:
+            title = '<Unknown>'
+        else:
+            title = tData.text
+        
+        return title
+    
+    def __checkIfError(self, value):
+        '''
+        Private member function to check if the Value retured from the function __getDataFromURL is an Errors. 
+        
+        '''
+        if ( 'HTTPError' in value or 'URLError' in value or 'HTTPException' in value or 'Generic Exception' in value):
+            return True
+        else:
+            return False
+
+    def __getURLInfo(self, handle):
+        '''
+        Private member function used for obtaining the file size and last modifed date of the URL under process. 
+        '''
+        if ( handle.info().dict.has_key('last-modified')):
+            lastModified = handle.info()['last-modified']
+        else:
+            lastModified = '<Unknown>'
+        
+        if ( handle.info().dict.has_key('content-length')):
+            size = self.__size(int(handle.info()['content-length']))
+        else:
+            size = '<Unknown>'
+        
+        linkType = handle.info().gettype()
+        
+        return (linkType, lastModified, size)
