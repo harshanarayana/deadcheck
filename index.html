@@ -62,6 +62,15 @@
     -exempt &lt;ExceptionURL File&gt; -depth &lt;int, default = 1&gt; -v &lt;default = True&gt;]
 </code></pre>
 
+<p><strong>API Usage</strong></p>
+
+<pre><code>    from deadcheck.deadcheck import DeadcheckAPI
+    checker = DeadcheckAPI([proxyURL, userName, password, auth_base_url])
+    urlObj = checker.amIDead(urlToCheck)
+    print urlObj.info()
+    children = urlObj.getChildren()
+</code></pre>
+
 <h1>
 <a name="pending-implementation" class="anchor" href="#pending-implementation"><span class="octicon octicon-link"></span></a>Pending Implementation</h1>
 
@@ -153,7 +162,16 @@
 <a name="v0032" class="anchor" href="#v0032"><span class="octicon octicon-link"></span></a>v0.0.3.2:</h2>
 </li>
 <li>Fix for AttributeError in __cleanupJavaScript Function ( Bug #3 ) </li>
-<li>Minor Modification for RegExp used in Exceptions file.</li>
+<li>
+<p>Minor Modification for RegExp used in Exceptions file.</p>
+
+<h2>
+<a name="v0033" class="anchor" href="#v0033"><span class="octicon octicon-link"></span></a>V0.0.3.3:</h2>
+</li>
+<li>Addition of new Class 'DeadcheckAPI' that provides the user with a small scare function that can be used to analyze a single URL in the CLI</li>
+<li>The Return value of this function call will be <strong>URLLinks</strong> Object and hence you can interate through the Child Links and call the function 
+<strong>amIDead</strong> manually to analyze 'n' number of links.<br>
+</li>
 </ul>
       </section>
       <footer>
