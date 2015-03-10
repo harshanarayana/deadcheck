@@ -46,7 +46,7 @@ Pending Implementation
   - ~~Regex support to Exception links. (Implemented for Basic RegExp)~~ 
   - ~~Additional Log / Debug Option Support.(Change Implemented)~~ 
   - GUI ( Work In Progress )
-  -- ~~Custom API to facilitate the validation of Minor Links or Single Links.~~ 
+  - ~~Custom API to facilitate the validation of Minor Links or Single Links.~~ 
 
 Change Log
 ==========
