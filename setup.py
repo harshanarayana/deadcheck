@@ -11,6 +11,7 @@ Created on Dec 3, 2013
              2014-07-16    :    New Release to Support Additional Logging and RegExp Support in Exemptions File. V 0.0.3.2
              2015-03-10    :    Test Suite Included to Run Tests during Installation time.
              2015-03-10    :    New Release. V 0.0.3.3
+             2015-03-10    :    New Release. V 0.0.3.3.1
 '''
 
 __version__ = "0.0.5"
@@ -20,8 +21,8 @@ __date__ = "03 Dec 2013"
 from setuptools import setup, find_packages
 
 setup( name         = "deadcheck",
-       version      = "0.0.3.3",
-       description  = "Deadlink Check Utility using Python Modukles",
+       version      = "0.0.3.3.1",
+       description  = "Deadlink Check Utility using Python Modules",
        author       = "Harsha Narayana",
        author_email = "harsha2k4@gmail.com",
        url          = "https://github.com/harshanarayana/deadcheck",

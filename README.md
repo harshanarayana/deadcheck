@@ -113,3 +113,7 @@ v0.0.3:
   - The Return value of this function call will be **URLLinks** Object and hence you can iterate through the Child Links and call the function 
     **amIDead** manually to analyze 'n' number of links.  
   - Custom Test Suite has been included to support the running of tests during Installation process.
+  
+ V0.0.3.3.1:
+ -----------
+  - Minor chagnes made into run.py. Output Directory Parameter is made mandatory.
