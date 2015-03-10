@@ -16,8 +16,10 @@ base URL.
                           javascript:openWindow method used for URL Opening. <Further enhancement required>.
             2014-07-16    Additional Support for RegExp in Exemptions file and Logging Information Included.
             2014-07-17    Change Implemented to Avoid AttributeError When the RegExp Fails to Match the URL.
-            2017-07-28    Additional class 'DeadcheckAPI' was included to support the Usage of the tool through
+            2014-07-28    Additional class 'DeadcheckAPI' was included to support the Usage of the tool through
                           command line to perform the analysis of individual URLs
+            2015-03-10    Proxy Support issue Fixed inside DeadcheckAPI
+            2015-03-10    Authentication Support issue Fixed inside DeadcheckAPI
 '''
 
 __version__ = "0.0.7"
@@ -628,15 +630,21 @@ class DeadcheckAPI(object):
             __proxy = urllib2.ProxyHandler({'http':self.__dict__['_proxy'], 'https':self.__dict__['_proxy']})
             __opener = urllib2.build_opener(__proxy)
             
+            
+        # Fixed on 2015-03-10 to Correct the Authentication Support Issue inside the DeadcheckAPI class.
         if ( self.__checkKey('_username') and self.__checkKey('_password')):
             passManager = urllib2.HTTPPasswordMgrWithDefaultRealm()
             if ( self.__checkKey('_auth_base')):
                 passManager.add_password(None, self.__dict__['_auth_base'], self.__dict__['_username'], self.__dict__['_password'])
-                __auth = urllib2.HTTPBasicAuthHandler(passManager)
-                __opener = urllib2.build_opener(__auth)
+            else:
+                passManager.add_password(None, self.__dict__['_url'], self.__dict__['_username'], self.__dict__['_password'])
             
-            if ( __opener != None ):
-                urllib2.install_opener(__opener)
+            __auth = urllib2.HTTPBasicAuthHandler(passManager)
+            __opener = urllib2.build_opener(__auth)
+            
+        # Fixed on 2015-03-10 to Correct the Proxy Support Issue inside the DeadcheckAPI class.
+        if ( __opener != None ):
+            urllib2.install_opener(__opener)
                 
                         
     def __checkKey(self, key):
