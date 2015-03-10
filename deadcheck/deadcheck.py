@@ -22,8 +22,8 @@ base URL.
             2015-03-10    Authentication Support issue Fixed inside DeadcheckAPI
 '''
 
-__version__ = "0.0.7"
-__date__ = "28th July, 2014"
+__version__ = "0.0.8"
+__date__ = "3rd March, 2015"
 __author__ = "Harsha Narayana"
 
 

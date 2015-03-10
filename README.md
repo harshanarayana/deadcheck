@@ -109,5 +109,6 @@ v0.0.3:
  V0.0.3.3:
  ---------
   - Addition of new Class 'DeadcheckAPI' that provides the user with a small scare function that can be used to analyze a single URL in the CLI
-  - The Return value of this function call will be **URLLinks** Object and hence you can interate through the Child Links and call the function 
+  - The Return value of this function call will be **URLLinks** Object and hence you can iterate through the Child Links and call the function 
     **amIDead** manually to analyze 'n' number of links.  
+  - Custom Test Suite has been included to support the running of tests during Installation process.
