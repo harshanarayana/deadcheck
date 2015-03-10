@@ -16,10 +16,10 @@ Script that can be used for Running the Python Utility Deadcheck from the CLI
 @change:    2013-12-09     : Initial Draft
             2013-12-13     : Script Updated to Support the Usage of the Report generation module to 
                              create a Report based on the depth of link being processed. 
-            
+            2015-03-10     : Converted -out Parameter to Mandatory Parameter. 
 '''
 
-__verion__ = "0.0.2"
+__verion__ = "0.0.3"
 __date__ = "09th December 2013"
 __author__ = "Harsha Narayana"
 
@@ -101,7 +101,7 @@ parser.add_argument('-depth', action='store', type=int, dest='_depth',
 parser.add_argument('-v', action='store_true', dest='_verbose', default=True, help='Choose if the logs are to be displayed in the CLI')
 
 parser.add_argument('-out', action='store', type=str, dest='_out',
-                    metavar='OututDirectory', help='Output Directory to generate the reports.')
+                    metavar='OututDirectory', required=True, help='Output Directory to generate the reports.')
 
 args = parser.parse_args()
 
