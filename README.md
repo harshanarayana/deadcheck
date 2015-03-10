@@ -45,7 +45,8 @@ Pending Implementation
   - Handling the Processing of Links using Multiple Threads. ( To reduce processing time )
   - ~~Regex support to Exception links. (Implemented for Basic RegExp)~~ 
   - ~~Additional Log / Debug Option Support.(Change Implemented)~~ 
-  - GUI ( Work In Progress ) 
+  - GUI ( Work In Progress )
+  -- ~~Custom API to facilitate the validation of Minor Links or Single Links.~~ 
 
 Change Log
 ==========
