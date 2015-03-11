@@ -29,14 +29,14 @@ https://www.assembla.com/spaces/deadcheck/tickets
 		-password <Password to access Protected Page> -auth_base <Super URL for Authentication> -log <logFile> 
 		-exempt <ExceptionURL File> -depth <int, default = 1> -v <default = True>] -out <OutputDirectory>
   
-   **API Usage**
+   **API Usage** 
+
+		from deadcheck.deadcheck import DeadcheckAPI
+		checker = DeadcheckAPI([proxyURL, userName, password, auth_base_url])
+		urlObj = checker.amIDead(urlToCheck)
+		print urlObj.info()
+		children = urlObj.getChildren()
   
-  		from deadcheck.deadcheck import DeadcheckAPI
-  		checker = DeadcheckAPI([proxyURL, userName, password, auth_base_url])
-  		urlObj = checker.amIDead(urlToCheck)
-  		print urlObj.info()
-  		children = urlObj.getChildren()
-  		
 		
 Pending Implementation
 ======================

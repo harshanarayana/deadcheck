@@ -447,7 +447,7 @@ class Deadcheck(object):
                                     if ( cLink.startswith('#') or cLink.startswith('.') or cLink.startswith('..') or url not in cLink):
                                         cLink = urlparse.urljoin(url, cLink)
                                     
-                                    if ( self.__dict__['_url'] in cLink):
+                                    if ( urlparse.urlparse(self.__dict__['_url']).netloc in cLink):
                                         cTitle = link.text
                                         temp = URLLinks(url, title, cLink, cTitle, status='UNPROCESSED')
                                         urlObj.addChild(temp)
@@ -716,7 +716,7 @@ class DeadcheckAPI(object):
                 if ( cLink.startswith('#') or cLink.startswith('.') or cLink.startswith('..') or url not in cLink):
                     cLink = urlparse.urljoin(url, cLink)
                 
-                if ( url in cLink):
+                if ( urlparse.urlparse(url).netloc in cLink):
                     cTitle = link.text
                     temp = URLLinks(url, title, cLink, cTitle)
                     urlObj.addChild(temp)
