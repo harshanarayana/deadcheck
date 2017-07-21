@@ -12,10 +12,11 @@ python.
 import unittest
 from deadcheck.deadcheck import DeadcheckAPI
 
-class TestDeadCheckAPIFailure(unittest.TestCase):
+class TestDeadCheck(unittest.TestCase):
     def setUp(self):
         self.checker = DeadcheckAPI()
-        
+    
+class TestDeadCheckAPIFailure(TestDeadCheck):
     def runTest(self):
         print "\nRunning Check For Failure Case\n"
         self.urlObj = self.checker.amIDead('https://pypi.python.org/pypiy')
@@ -26,10 +27,7 @@ class TestDeadCheckAPIFailure(unittest.TestCase):
     def tearDown(self):
         print "\nCleaning up Failure Test Case\n"
         
-class TestDeadCheckAPIPass(unittest.TestCase):
-    def setUp(self):
-        self.checker = DeadcheckAPI()
-        
+class TestDeadCheckAPIPass(TestDeadCheck):
     def runTest(self):
         print "\nRunning Check for Pass Case\n"
         self.urlObj = self.checker.amIDead('https://pypi.python.org/pypi')
