@@ -288,7 +288,7 @@ class Deadcheck(object):
         elif ( value[0] == 'Generic Exception'):
             raise Exception(value[0] + ' : ' + value[1])
 
-    def __check_url_scheme(url):
+    def __check_url_scheme(self, url):
         '''
         This method is used to check the URL Schema and see if it contains a valid http
         or https scheme.
