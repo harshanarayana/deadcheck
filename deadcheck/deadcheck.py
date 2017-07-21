@@ -287,7 +287,15 @@ class Deadcheck(object):
             raise httplib.HTTPException(value[1])
         elif ( value[0] == 'Generic Exception'):
             raise Exception(value[0] + ' : ' + value[1])
-        
+
+    def __check_url_scheme(url):
+        '''
+        This method is used to check the URL Schema and see if it contains a valid http
+        or https scheme.
+        '''
+        if urlparse.urlparse(url).scheme not in ['http', 'https']:
+            raise Exception("Invalid URL Scheme. Only Http and Https are supported.")
+
     def __processBaseURL(self):
         '''
         Private member function used for Processing the base URL.
@@ -315,6 +323,7 @@ class Deadcheck(object):
             return urlObject
         else:
             ts = time.time()
+            self.__check_url_scheme(self.__dict__['_url'])
             htmlData = urllib2.urlopen(self.__dict__['_url'])
             ted = time.time()
             data = etree.HTML(htmlData.read())
@@ -431,6 +440,7 @@ class Deadcheck(object):
                                 self.__printError('Broken Link ' + str(obj.get()));
                             else:
                                 ts = time.time()
+                                self.__check_url_scheme(url)
                                 htmlData = urllib2.urlopen(url)
                                 ted = time.time()
                                 data = etree.HTML(htmlData.read())
@@ -567,6 +577,7 @@ class Deadcheck(object):
         calling function which is later used for processing and extracting purpose. 
         '''
         try:
+            self.__check_url_scheme(urlLink)
             htmlData = urllib2.urlopen(urlLink, timeout=10)
             return (htmlData)
         except urllib2.HTTPError, e:
