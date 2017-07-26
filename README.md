@@ -1,6 +1,8 @@
 Description
 ===========
 
+[![Build Status](https://travis-ci.org/harshanarayana/deadcheck.svg?branch=master)](https://travis-ci.org/harshanarayana/deadcheck)
+
 <Work In progress>
 
 This is a tool that can be used for Analyzing and identifying the Deadlink in a website. This can come handy during the regular website maintenance. 
